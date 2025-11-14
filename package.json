@@ -1,0 +1,34 @@
+{
+  "name": "emcs-blockchain-demo",
+  "version": "1.0.0",
+  "description": "EMCS Blockchain Demo - Decentralized excise goods tracking on IOTA",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "build:frontend": "cd frontend && npm run build",
+    "build:backend": "cd backend && npm run build",
+    "lint:frontend": "cd frontend && npm run lint",
+    "lint:backend": "cd backend && npm run lint",
+    "lint": "npm run lint:frontend && npm run lint:backend"
+  },
+  "keywords": [
+    "emcs",
+    "blockchain",
+    "iota",
+    "excise",
+    "move",
+    "nft",
+    "tracking"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "prettier": "^3.0.0"
+  }
+}
