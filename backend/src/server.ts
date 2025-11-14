@@ -2,10 +2,16 @@ import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import consignmentRoutes from './routes/consignmentRoutes.js';
+import seedRoutes from './routes/seedRoutes.js';
+import identityRoutes from './routes/identityRoutes.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 // Load environment variables
 dotenv.config();
+
+// For demo/development mode without live contract deployment
+// In production, contracts would be deployed to IOTA testnet
+// Mock Package IDs are used for demonstration purposes
 
 // Initialize Express app
 const app: Express = express();
@@ -51,12 +57,17 @@ app.get('/api', (req: Request, res: Response) => {
       dispatchConsignment: 'POST /api/consignments/:arc/dispatch',
       receiveConsignment: 'POST /api/consignments/:arc/receive',
       getConsignmentEvents: 'GET /api/consignments/:arc/events',
+      resolveIdentity: 'GET /api/identity/:walletAddress',
+      verifyDomain: 'POST /api/identity/verify-domain',
+      listIdentities: 'GET /api/identity',
     },
   });
 });
 
-// Mount consignment routes
+// Mount routes
 app.use('/api/consignments', consignmentRoutes);
+app.use('/api/seed', seedRoutes);
+app.use('/api/identity', identityRoutes);
 
 // Error handling middleware
 app.use(errorHandler);

@@ -1,10 +1,23 @@
 import { useState } from 'react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
-import WalletConnect from './WalletConnect';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useWalletStore } from '../stores/useWalletStore';
+import EMCSLogo from './EMCSLogo';
 
 export default function Layout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { walletAddress, disconnect } = useWalletStore();
+
+  const handleLogout = () => {
+    disconnect();
+    navigate('/login');
+  };
+
+  const truncateAddress = (address: string): string => {
+    if (address.length <= 10) return address;
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  };
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -12,38 +25,71 @@ export default function Layout() {
 
   const getLinkClass = (path: string) => {
     const baseClass =
-      'px-3 py-2 rounded-md text-sm font-medium transition-colors min-h-[44px] flex items-center';
+      'px-4 py-2 rounded-lg text-sm font-medium transition-all min-h-[44px] flex items-center';
     return isActive(path)
-      ? `${baseClass} bg-blue-50 text-blue-600`
-      : `${baseClass} text-gray-700 hover:text-blue-600 hover:bg-gray-50`;
+      ? `${baseClass} bg-white text-blue-600 shadow-md`
+      : `${baseClass} text-blue-100 hover:text-white hover:bg-blue-800`;
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm border-b border-gray-200">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100">
+      <nav className="bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center space-x-4 sm:space-x-8">
-              <Link to="/" className="text-lg sm:text-xl font-bold text-blue-600 whitespace-nowrap">
-                EMCS Blockchain
+              <Link to="/" className="flex items-center space-x-2">
+                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md">
+                  <svg
+                    className="w-6 h-6 text-blue-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                    />
+                  </svg>
+                </div>
+                <div className="hidden sm:block">
+                  <span className="text-lg font-bold text-white">EMCS</span>
+                  <p className="text-xs text-blue-200 -mt-1">Blockchain</p>
+                </div>
               </Link>
-              <div className="hidden md:flex space-x-4">
+              <div className="hidden md:flex space-x-2">
                 <Link to="/" className={getLinkClass('/')}>
                   Dashboard
+                </Link>
+                <Link to="/all-consignments" className={getLinkClass('/all-consignments')}>
+                  All Consignments
                 </Link>
                 <Link to="/create" className={getLinkClass('/create')}>
                   Create Consignment
                 </Link>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <div className="hidden sm:block">
-                <WalletConnect />
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              {/* Wallet Address Display */}
+              <div className="hidden sm:flex items-center space-x-3">
+                <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg border border-white/20">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                  <span className="text-sm font-mono text-white">
+                    {walletAddress ? truncateAddress(walletAddress) : ''}
+                  </span>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="px-4 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-all shadow-md hover:shadow-lg"
+                >
+                  Logout
+                </button>
               </div>
               {/* Mobile menu button */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-blue-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 min-h-[44px] min-w-[44px]"
+                className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white min-h-[44px] min-w-[44px]"
                 aria-expanded="false"
               >
                 <span className="sr-only">Open main menu</span>
@@ -81,10 +127,17 @@ export default function Layout() {
 
         {/* Mobile menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-gray-200">
+          <div className="md:hidden border-t border-white/20 bg-blue-900/50 backdrop-blur-sm">
             <div className="px-2 pt-2 pb-3 space-y-1">
               <Link to="/" className={getLinkClass('/')} onClick={() => setMobileMenuOpen(false)}>
                 Dashboard
+              </Link>
+              <Link
+                to="/all-consignments"
+                className={getLinkClass('/all-consignments')}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                All Consignments
               </Link>
               <Link
                 to="/create"
@@ -94,8 +147,21 @@ export default function Layout() {
                 Create Consignment
               </Link>
             </div>
-            <div className="pt-4 pb-3 border-t border-gray-200 px-4 sm:hidden">
-              <WalletConnect />
+            <div className="pt-4 pb-3 border-t border-white/20 px-4 sm:hidden">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm px-3 py-2 rounded-lg flex-1 mr-2 border border-white/20">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                  <span className="text-sm font-mono text-white truncate">
+                    {walletAddress ? truncateAddress(walletAddress) : ''}
+                  </span>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="px-4 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors min-h-[44px]"
+                >
+                  Logout
+                </button>
+              </div>
             </div>
           </div>
         )}

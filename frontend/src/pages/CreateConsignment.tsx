@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useWalletStore } from '../stores/useWalletStore';
 import { apiClient } from '../services/apiClient';
-import ConsignmentForm, { FormData } from '../components/ConsignmentForm';
+import ConsignmentForm, { type ConsignmentFormData } from '../components/ConsignmentForm';
 import SuccessModal from '../components/SuccessModal';
 import { showSuccessNotification, showErrorNotification } from '../utils/notifications';
 
@@ -14,7 +14,7 @@ export default function CreateConsignment() {
   const [error, setError] = useState<string | null>(null);
   const [formKey, setFormKey] = useState(0); // Key to force form reset
 
-  const handleSubmit = async (formData: FormData) => {
+  const handleSubmit = async (formData: ConsignmentFormData) => {
     if (!walletAddress) {
       showErrorNotification('Please connect your wallet first');
       return;
@@ -33,6 +33,10 @@ export default function CreateConsignment() {
         unit: formData.unit,
         origin: formData.origin,
         destination: formData.destination,
+        transportMode: formData.transportMode,
+        vehicleLicensePlate: formData.vehicleLicensePlate,
+        containerNumber: formData.containerNumber,
+        beerPackaging: formData.beerPackaging,
       });
 
       // Store response data
@@ -85,10 +89,11 @@ export default function CreateConsignment() {
 
   return (
     <div>
-      <div className="mb-4 sm:mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Create Consignment</h1>
-        <p className="text-gray-600">
-          Create a new consignment record for excise goods movement on the blockchain.
+      {/* Header Section */}
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-xl p-6 mb-6">
+        <h1 className="text-3xl font-bold text-white mb-2">Create Consignment</h1>
+        <p className="text-blue-100">
+          Create a new consignment record for excise goods movement on the blockchain
         </p>
       </div>
 

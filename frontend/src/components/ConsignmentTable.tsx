@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Consignment } from '../stores/useConsignmentStore';
+import type { Consignment } from '../stores/useConsignmentStore';
 import { useWalletStore } from '../stores/useWalletStore';
 import { apiClient } from '../services/apiClient';
 import LoadingSpinner from './LoadingSpinner';
@@ -203,7 +203,18 @@ export default function ConsignmentTable({
                   {consignment.arc}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {consignment.goodsType}
+                  <div className="flex items-center space-x-2">
+                    {consignment.goodsType === 'Beer' && (
+                      <svg
+                        className="w-5 h-5 text-amber-600"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" />
+                      </svg>
+                    )}
+                    <span>{consignment.goodsType}</span>
+                  </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {consignment.quantity} {consignment.unit}
@@ -245,7 +256,14 @@ export default function ConsignmentTable({
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-500">Goods:</span>
-                <span className="text-gray-900 font-medium">{consignment.goodsType}</span>
+                <span className="text-gray-900 font-medium flex items-center space-x-1">
+                  {consignment.goodsType === 'Beer' && (
+                    <svg className="w-4 h-4 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" />
+                    </svg>
+                  )}
+                  <span>{consignment.goodsType}</span>
+                </span>
               </div>
 
               <div className="flex justify-between">

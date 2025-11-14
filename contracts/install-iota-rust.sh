@@ -71,8 +71,8 @@ echo ""
 
 cd "$HOME/iota-cli"
 
-# Build and install
-cargo install --path crates/iota-cli --locked
+# Build and install (the CLI is in crates/iota, not crates/iota-cli)
+cargo install --path crates/iota --locked
 
 echo ""
 echo "✅ IOTA CLI built and installed"

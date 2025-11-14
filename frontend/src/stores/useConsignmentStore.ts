@@ -1,5 +1,21 @@
 import { create } from 'zustand';
 
+export interface OperatorInfo {
+  seedNumber: string;
+  companyName: string;
+  vatNumber: string;
+  country: string;
+  address: string;
+}
+
+export interface BeerPackagingData {
+  canSize: number;
+  cansPerPackage: number;
+  numberOfPackages: number;
+  totalCans?: number;
+  totalLiters?: number;
+}
+
 export interface Consignment {
   arc: string;
   consignor: string;
@@ -14,6 +30,13 @@ export interface Consignment {
   createdAt: string;
   dispatchedAt?: string;
   receivedAt?: string;
+  transactionId?: string;
+  transportMode?: string;
+  vehicleLicensePlate?: string;
+  containerNumber?: string;
+  consignorInfo?: OperatorInfo;
+  consigneeInfo?: OperatorInfo;
+  beerPackaging?: BeerPackagingData;
 }
 
 interface ConsignmentState {

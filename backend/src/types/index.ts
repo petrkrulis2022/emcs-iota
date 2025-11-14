@@ -13,12 +13,47 @@ export interface Consignment {
   createdAt: string;
   dispatchedAt?: string;
   receivedAt?: string;
+  transactionId?: string;
+  // Transport details
+  transportMode?: 'truck' | 'container';
+  vehicleLicensePlate?: string;
+  containerNumber?: string;
+  // SEED operator info
+  consignorInfo?: {
+    seedNumber: string;
+    companyName: string;
+    vatNumber: string;
+    country: string;
+    address: string;
+  };
+  consigneeInfo?: {
+    seedNumber: string;
+    companyName: string;
+    vatNumber: string;
+    country: string;
+    address: string;
+  };
+  beerPackaging?: {
+    canSize: number;
+    cansPerPackage: number;
+    numberOfPackages: number;
+    totalCans: number;
+    totalLiters: number;
+  };
 }
 
 export enum ConsignmentStatus {
   DRAFT = 'Draft',
   IN_TRANSIT = 'In Transit',
   RECEIVED = 'Received',
+}
+
+export interface BeerPackagingData {
+  canSize: number; // in ml
+  cansPerPackage: number;
+  numberOfPackages: number;
+  totalCans: number;
+  totalLiters: number;
 }
 
 export interface CreateConsignmentRequest {
@@ -29,6 +64,10 @@ export interface CreateConsignmentRequest {
   unit: string;
   origin: string;
   destination: string;
+  transportMode?: 'truck' | 'container';
+  vehicleLicensePlate?: string;
+  containerNumber?: string;
+  beerPackaging?: BeerPackagingData;
 }
 
 export interface DispatchConsignmentRequest {

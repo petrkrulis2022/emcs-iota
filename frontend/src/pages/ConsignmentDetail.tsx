@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { apiClient, MovementEvent } from '../services/apiClient';
-import { Consignment } from '../stores/useConsignmentStore';
+import { apiClient, type MovementEvent } from '../services/apiClient';
+import type { Consignment } from '../stores/useConsignmentStore';
 import { useWalletStore } from '../stores/useWalletStore';
 import QRCodeDisplay from '../components/QRCodeDisplay';
 import MovementTimeline from '../components/MovementTimeline';
@@ -139,11 +139,14 @@ export default function ConsignmentDetail() {
   return (
     <div className="space-y-6">
       {/* Header Section */}
-      <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Consignment Details</h1>
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-xl p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-2">Consignment Details</h1>
+            <p className="text-blue-100 font-mono text-sm">ARC: {consignment.arc}</p>
+          </div>
           <span
-            className={`px-4 py-2 rounded-full text-sm font-semibold ${getStatusColor(consignment.status)}`}
+            className={`px-4 py-2 rounded-full text-sm font-semibold shadow-lg ${getStatusColor(consignment.status)}`}
           >
             {consignment.status}
           </span>
@@ -223,22 +226,152 @@ export default function ConsignmentDetail() {
             <p className="text-base font-medium text-gray-900">{consignment.destination}</p>
           </div>
         </div>
+
+        {/* Beer Packaging Details */}
+        {consignment.goodsType === 'Beer' && consignment.beerPackaging && (
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <h3 className="text-md font-semibold text-gray-900 mb-3 flex items-center">
+              <svg className="w-5 h-5 mr-2 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" />
+              </svg>
+              Beer Packaging Details (EU Code: 2203)
+            </h3>
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div>
+                  <p className="text-gray-600">Container Type</p>
+                  <p className="font-medium text-gray-900">Cans</p>
+                </div>
+                <div>
+                  <p className="text-gray-600">Can Size</p>
+                  <p className="font-medium text-gray-900">
+                    {consignment.beerPackaging.canSize} ml
+                  </p>
+                </div>
+                <div>
+                  <p className="text-gray-600">Cans per Package</p>
+                  <p className="font-medium text-gray-900">
+                    {consignment.beerPackaging.cansPerPackage}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-gray-600">Number of Packages</p>
+                  <p className="font-medium text-gray-900">
+                    {consignment.beerPackaging.numberOfPackages}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 pt-4 border-t border-amber-300">
+                <div className="flex justify-between items-center">
+                  <span className="text-lg font-bold text-gray-900">Total Cans:</span>
+                  <span className="text-xl font-bold text-amber-600">
+                    {consignment.beerPackaging.totalCans?.toLocaleString() ||
+                      (
+                        consignment.beerPackaging.cansPerPackage *
+                        consignment.beerPackaging.numberOfPackages
+                      ).toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center mt-2">
+                  <span className="text-lg font-bold text-gray-900">Total Liters:</span>
+                  <span className="text-xl font-bold text-amber-600">
+                    {consignment.beerPackaging.totalLiters?.toFixed(1) ||
+                      (
+                        (consignment.beerPackaging.canSize / 1000) *
+                        consignment.beerPackaging.cansPerPackage *
+                        consignment.beerPackaging.numberOfPackages
+                      ).toFixed(1)}{' '}
+                    L
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Parties Section */}
       <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
         <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Parties</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <p className="text-sm text-gray-500">Consignor</p>
-            <p className="text-base font-mono text-gray-900 break-all">{consignment.consignor}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Consignor */}
+          <div className="border-l-4 border-blue-500 pl-4">
+            <p className="text-sm font-semibold text-gray-700 mb-2">Consignor</p>
+            {consignment.consignorInfo ? (
+              <div className="space-y-1">
+                <p className="text-base font-medium text-gray-900">
+                  {consignment.consignorInfo.companyName}
+                </p>
+                <p className="text-sm text-gray-600">
+                  SEED: {consignment.consignorInfo.seedNumber}
+                </p>
+                <p className="text-sm text-gray-600">VAT: {consignment.consignorInfo.vatNumber}</p>
+                <p className="text-sm text-gray-600">{consignment.consignorInfo.address}</p>
+                <p className="text-sm text-gray-600">{consignment.consignorInfo.country}</p>
+                <p className="text-xs font-mono text-gray-500 break-all mt-2">
+                  {consignment.consignor}
+                </p>
+              </div>
+            ) : (
+              <p className="text-base font-mono text-gray-900 break-all">{consignment.consignor}</p>
+            )}
           </div>
-          <div>
-            <p className="text-sm text-gray-500">Consignee</p>
-            <p className="text-base font-mono text-gray-900 break-all">{consignment.consignee}</p>
+
+          {/* Consignee */}
+          <div className="border-l-4 border-green-500 pl-4">
+            <p className="text-sm font-semibold text-gray-700 mb-2">Consignee</p>
+            {consignment.consigneeInfo ? (
+              <div className="space-y-1">
+                <p className="text-base font-medium text-gray-900">
+                  {consignment.consigneeInfo.companyName}
+                </p>
+                <p className="text-sm text-gray-600">
+                  SEED: {consignment.consigneeInfo.seedNumber}
+                </p>
+                <p className="text-sm text-gray-600">VAT: {consignment.consigneeInfo.vatNumber}</p>
+                <p className="text-sm text-gray-600">{consignment.consigneeInfo.address}</p>
+                <p className="text-sm text-gray-600">{consignment.consigneeInfo.country}</p>
+                <p className="text-xs font-mono text-gray-500 break-all mt-2">
+                  {consignment.consignee}
+                </p>
+              </div>
+            ) : (
+              <p className="text-base font-mono text-gray-900 break-all">{consignment.consignee}</p>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Transport Details Section */}
+      {(consignment.transportMode ||
+        consignment.vehicleLicensePlate ||
+        consignment.containerNumber) && (
+        <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Transport Details</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {consignment.transportMode && (
+              <div>
+                <p className="text-sm text-gray-500">Transport Mode</p>
+                <p className="text-base font-medium text-gray-900">{consignment.transportMode}</p>
+              </div>
+            )}
+            {consignment.vehicleLicensePlate && (
+              <div>
+                <p className="text-sm text-gray-500">Vehicle License Plate</p>
+                <p className="text-base font-medium text-gray-900">
+                  {consignment.vehicleLicensePlate}
+                </p>
+              </div>
+            )}
+            {consignment.containerNumber && (
+              <div>
+                <p className="text-sm text-gray-500">Container Number</p>
+                <p className="text-base font-medium text-gray-900">{consignment.containerNumber}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Timestamps Section */}
       <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">

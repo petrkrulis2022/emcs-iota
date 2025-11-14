@@ -1,4 +1,4 @@
-import { MovementEvent } from '../services/apiClient';
+import type { MovementEvent } from '../services/apiClient';
 
 interface MovementTimelineProps {
   events: MovementEvent[];

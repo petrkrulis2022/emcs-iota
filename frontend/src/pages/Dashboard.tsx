@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useWalletStore } from '../stores/useWalletStore';
 import { useConsignmentStore } from '../stores/useConsignmentStore';
 import ConsignmentTable from '../components/ConsignmentTable';
@@ -49,7 +50,10 @@ export default function Dashboard() {
   if (loading && consignments.length === 0) {
     return (
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">Dashboard</h1>
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-xl p-6 mb-6">
+          <h1 className="text-3xl font-bold text-white mb-2">Dashboard</h1>
+          <p className="text-blue-100">Track and manage your excise goods consignments</p>
+        </div>
         <SkeletonLoader type="table" count={5} />
       </div>
     );
@@ -118,27 +122,34 @@ export default function Dashboard() {
   if (consignments.length === 0) {
     return (
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">Dashboard</h1>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="text-gray-400 mb-4">
-              <svg
-                className="mx-auto h-12 w-12"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
-                />
-              </svg>
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No consignments yet</h3>
-            <p className="text-gray-600">Create your first consignment to get started</p>
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-xl p-6 mb-6">
+          <h1 className="text-3xl font-bold text-white mb-2">Dashboard</h1>
+          <p className="text-blue-100">Track and manage your excise goods consignments</p>
+        </div>
+        <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
+          <div className="text-blue-600 mb-4">
+            <svg
+              className="mx-auto h-16 w-16"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+              />
+            </svg>
           </div>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">No consignments yet</h3>
+          <p className="text-gray-600 mb-6">Create your first consignment to get started</p>
+          <Link
+            to="/create"
+            className="inline-block px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all"
+          >
+            Create Consignment
+          </Link>
         </div>
       </div>
     );
@@ -150,16 +161,46 @@ export default function Dashboard() {
 
   const getFilterButtonClass = (filter: StatusFilter) => {
     const baseClass =
-      'px-3 sm:px-4 py-2 rounded-lg font-medium transition-colors text-sm min-h-[44px] flex items-center justify-center';
-    const activeClass = 'bg-blue-600 text-white';
-    const inactiveClass = 'bg-gray-100 text-gray-700 hover:bg-gray-200';
+      'px-3 sm:px-4 py-2 rounded-lg font-medium transition-all text-sm min-h-[44px] flex items-center justify-center shadow-md';
+    const activeClass = 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg';
+    const inactiveClass = 'bg-white text-gray-700 hover:bg-gray-50 hover:shadow-lg';
 
     return `${baseClass} ${statusFilter === filter ? activeClass : inactiveClass}`;
   };
 
   return (
     <div>
-      <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 sm:mb-6">Dashboard</h1>
+      {/* Header Section */}
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-xl p-6 mb-6">
+        <h1 className="text-3xl font-bold text-white mb-2">Dashboard</h1>
+        <p className="text-blue-100">Track and manage your excise goods consignments</p>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="bg-white rounded-xl shadow-md p-4 border-l-4 border-gray-400">
+          <p className="text-sm text-gray-600 mb-1">Total</p>
+          <p className="text-2xl font-bold text-gray-900">{consignments.length}</p>
+        </div>
+        <div className="bg-white rounded-xl shadow-md p-4 border-l-4 border-gray-500">
+          <p className="text-sm text-gray-600 mb-1">Draft</p>
+          <p className="text-2xl font-bold text-gray-700">
+            {consignments.filter(c => c.status === 'Draft').length}
+          </p>
+        </div>
+        <div className="bg-white rounded-xl shadow-md p-4 border-l-4 border-blue-500">
+          <p className="text-sm text-gray-600 mb-1">In Transit</p>
+          <p className="text-2xl font-bold text-blue-600">
+            {consignments.filter(c => c.status === 'In Transit').length}
+          </p>
+        </div>
+        <div className="bg-white rounded-xl shadow-md p-4 border-l-4 border-green-500">
+          <p className="text-sm text-gray-600 mb-1">Received</p>
+          <p className="text-2xl font-bold text-green-600">
+            {consignments.filter(c => c.status === 'Received').length}
+          </p>
+        </div>
+      </div>
 
       {/* Status Filter Buttons */}
       <div className="mb-4 sm:mb-6 flex flex-wrap gap-2">
@@ -185,7 +226,7 @@ export default function Dashboard() {
 
       {/* Consignment Count */}
       <div className="mb-4">
-        <p className="text-gray-600">
+        <p className="text-gray-700 font-medium">
           Showing {filteredConsignments.length} of {consignments.length} consignment(s)
         </p>
       </div>

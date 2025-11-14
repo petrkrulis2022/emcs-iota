@@ -1,11 +1,17 @@
-import axios, { AxiosInstance, AxiosError } from 'axios';
-import { Consignment } from '../stores/useConsignmentStore';
+import axios, { type AxiosInstance, type AxiosError } from 'axios';
+import type { Consignment } from '../stores/useConsignmentStore';
 
 // API Response types
 export interface APIResponse<T> {
   success: boolean;
   data?: T;
   error?: string;
+}
+
+export interface BeerPackagingData {
+  canSize: number;
+  cansPerPackage: number;
+  numberOfPackages: number;
 }
 
 export interface CreateConsignmentRequest {
@@ -16,6 +22,10 @@ export interface CreateConsignmentRequest {
   unit: string;
   origin: string;
   destination: string;
+  transportMode?: string;
+  vehicleLicensePlate?: string;
+  containerNumber?: string;
+  beerPackaging?: BeerPackagingData;
 }
 
 export interface CreateConsignmentResponse {
@@ -135,8 +145,19 @@ class APIClient {
    * Create a new consignment
    */
   async createConsignment(data: CreateConsignmentRequest): Promise<CreateConsignmentResponse> {
-    const response = await this.client.post<CreateConsignmentResponse>('/api/consignments', data);
-    return response.data;
+    const response = await this.client.post<APIResponse<CreateConsignmentResponse>>(
+      '/api/consignments',
+      data
+    );
+    // Backend returns { success, data: { arc, transactionId, consignmentId }, timestamp }
+    // Extract the data object
+    if (response.data.data) {
+      return {
+        success: response.data.success,
+        ...response.data.data,
+      };
+    }
+    return response.data as any;
   }
 
   /**
@@ -149,6 +170,14 @@ class APIClient {
     }
 
     const response = await this.client.get<ConsignmentsResponse>('/api/consignments', { params });
+    return response.data;
+  }
+
+  /**
+   * Get all consignments (no operator filter)
+   */
+  async getAllConsignments(): Promise<ConsignmentsResponse> {
+    const response = await this.client.get<ConsignmentsResponse>('/api/consignments/all');
     return response.data;
   }
 
@@ -188,6 +217,30 @@ class APIClient {
   async getConsignmentEvents(arc: string): Promise<EventsResponse> {
     const response = await this.client.get<EventsResponse>(`/api/consignments/${arc}/events`);
     return response.data;
+  }
+
+  /**
+   * Lookup SEED operator by wallet address
+   */
+  async lookupOperator(walletAddress: string): Promise<any> {
+    const response = await this.client.get(`/api/seed/operators/${walletAddress}`);
+    return response.data.data;
+  }
+
+  /**
+   * Resolve IOTA Identity DID from wallet address
+   */
+  async resolveIdentity(walletAddress: string): Promise<any> {
+    const response = await this.client.get(`/api/identity/${walletAddress}`);
+    return response.data.data;
+  }
+
+  /**
+   * Verify domain linkage for a DID
+   */
+  async verifyDomainLinkage(did: string, domain: string): Promise<boolean> {
+    const response = await this.client.post('/api/identity/verify-domain', { did, domain });
+    return response.data.data.verified;
   }
 }
 
