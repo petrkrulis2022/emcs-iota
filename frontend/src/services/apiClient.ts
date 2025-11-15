@@ -186,8 +186,8 @@ class APIClient {
    * Get a single consignment by ARC
    */
   async getConsignment(arc: string): Promise<Consignment> {
-    const response = await this.client.get<Consignment>(`/api/consignments/${arc}`);
-    return response.data;
+    const response = await this.client.get<APIResponse<Consignment>>(`/api/consignments/${arc}`);
+    return response.data.data!;
   }
 
   /**
