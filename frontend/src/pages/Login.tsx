@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useWalletStore } from '../stores/useWalletStore';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { showErrorNotification, showSuccessNotification } from '../utils/notifications';
+import WalletButton from '../components/WalletButton';
+import { useCurrentAccount } from '@iota/dapp-kit';
 
 export default function Login() {
   const navigate = useNavigate();

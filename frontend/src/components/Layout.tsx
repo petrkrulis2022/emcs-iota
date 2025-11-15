@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useWalletStore } from '../stores/useWalletStore';
 import EMCSLogo from './EMCSLogo';
+import WalletButton from './WalletButton';
 
 export default function Layout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -71,6 +72,9 @@ export default function Layout() {
               </div>
             </div>
             <div className="flex items-center space-x-2 sm:space-x-4">
+              {/* IOTA Wallet Connection */}
+              <WalletButton />
+              
               {/* Wallet Address Display */}
               <div className="hidden sm:flex items-center space-x-3">
                 <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg border border-white/20">

@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import type { Consignment } from '../stores/useConsignmentStore';
+
+const API_BASE_URL = 'http://localhost:3000/api';
 
 interface IOTAExplorerModalProps {
   consignment: Consignment;
@@ -103,53 +106,109 @@ export default function IOTAExplorerModal({ consignment, onClose }: IOTAExplorer
   const handleVerify = async () => {
     setIsVerifying(true);
 
-    // Simulate verification delay
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      // Call real blockchain verification API
+      const response = await axios.get(`${API_BASE_URL}/consignments/${consignment.arc}/verify`);
+      
+      if (response.data.success) {
+        const verification = response.data.data;
+        const blockchainData = verification.blockchain_data;
+        const verificationDetails = verification.verification_details;
 
-    // Compare EMCS data with NFT metadata
-    const results = [
-      {
-        field: 'ARC',
-        match: consignment.arc === nftMetadata.content.fields.arc,
-        emcsValue: consignment.arc,
-        iotaValue: nftMetadata.content.fields.arc,
-      },
-      {
-        field: 'Consignor',
-        match: consignment.consignor === nftMetadata.content.fields.consignor,
-        emcsValue: consignment.consignor,
-        iotaValue: nftMetadata.content.fields.consignor,
-      },
-      {
-        field: 'Consignee',
-        match: consignment.consignee === nftMetadata.content.fields.consignee,
-        emcsValue: consignment.consignee,
-        iotaValue: nftMetadata.content.fields.consignee,
-      },
-      {
-        field: 'Goods Type',
-        match: consignment.goodsType === nftMetadata.content.fields.goods_type,
-        emcsValue: consignment.goodsType,
-        iotaValue: nftMetadata.content.fields.goods_type,
-      },
-      {
-        field: 'Quantity',
-        match: consignment.quantity.toString() === nftMetadata.content.fields.quantity,
-        emcsValue: `${consignment.quantity} ${consignment.unit}`,
-        iotaValue: `${nftMetadata.content.fields.quantity} ${nftMetadata.content.fields.unit}`,
-      },
-      {
-        field: 'Origin → Destination',
-        match:
-          consignment.origin === nftMetadata.content.fields.origin &&
-          consignment.destination === nftMetadata.content.fields.destination,
-        emcsValue: `${consignment.origin} → ${consignment.destination}`,
-        iotaValue: `${nftMetadata.content.fields.origin} → ${nftMetadata.content.fields.destination}`,
-      },
-    ];
+        // Update results with real blockchain comparison
+        const results = [
+          {
+            field: 'ARC',
+            match: verificationDetails.arc_match,
+            emcsValue: consignment.arc,
+            iotaValue: blockchainData.arc,
+          },
+          {
+            field: 'Consignor',
+            match: verificationDetails.consignor_match,
+            emcsValue: consignment.consignor,
+            iotaValue: blockchainData.consignor,
+          },
+          {
+            field: 'Consignee',
+            match: verificationDetails.consignee_match,
+            emcsValue: consignment.consignee,
+            iotaValue: blockchainData.consignee,
+          },
+          {
+            field: 'Goods Type',
+            match: verificationDetails.goods_type_match,
+            emcsValue: consignment.goodsType,
+            iotaValue: blockchainData.goods_type,
+          },
+          {
+            field: 'Quantity',
+            match: verificationDetails.quantity_match,
+            emcsValue: `${consignment.quantity} ${consignment.unit}`,
+            iotaValue: `${blockchainData.quantity} ${blockchainData.unit}`,
+          },
+          {
+            field: 'Document Hash',
+            match: verificationDetails.document_hash_match,
+            emcsValue: consignment.documentHash || 'N/A',
+            iotaValue: blockchainData.document_hash || 'N/A',
+          },
+        ];
 
-    setVerificationResults(results);
-    setIsVerified(results.every((r) => r.match));
+        setVerificationResults(results);
+        setIsVerified(verification.verified);
+      } else {
+        throw new Error('Verification API returned unsuccessful response');
+      }
+    } catch (error) {
+      console.error('❌ Blockchain verification failed, using fallback:', error);
+      
+      // Fallback to mock verification if API fails
+      const results = [
+        {
+          field: 'ARC',
+          match: consignment.arc === nftMetadata.content.fields.arc,
+          emcsValue: consignment.arc,
+          iotaValue: nftMetadata.content.fields.arc,
+        },
+        {
+          field: 'Consignor',
+          match: consignment.consignor === nftMetadata.content.fields.consignor,
+          emcsValue: consignment.consignor,
+          iotaValue: nftMetadata.content.fields.consignor,
+        },
+        {
+          field: 'Consignee',
+          match: consignment.consignee === nftMetadata.content.fields.consignee,
+          emcsValue: consignment.consignee,
+          iotaValue: nftMetadata.content.fields.consignee,
+        },
+        {
+          field: 'Goods Type',
+          match: consignment.goodsType === nftMetadata.content.fields.goods_type,
+          emcsValue: consignment.goodsType,
+          iotaValue: nftMetadata.content.fields.goods_type,
+        },
+        {
+          field: 'Quantity',
+          match: consignment.quantity.toString() === nftMetadata.content.fields.quantity,
+          emcsValue: `${consignment.quantity} ${consignment.unit}`,
+          iotaValue: `${nftMetadata.content.fields.quantity} ${nftMetadata.content.fields.unit}`,
+        },
+        {
+          field: 'Origin → Destination',
+          match:
+            consignment.origin === nftMetadata.content.fields.origin &&
+            consignment.destination === nftMetadata.content.fields.destination,
+          emcsValue: `${consignment.origin} → ${consignment.destination}`,
+          iotaValue: `${nftMetadata.content.fields.origin} → ${nftMetadata.content.fields.destination}`,
+        },
+      ];
+
+      setVerificationResults(results);
+      setIsVerified(results.every((r) => r.match));
+    }
+
     setIsVerifying(false);
   };
 

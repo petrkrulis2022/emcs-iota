@@ -21,10 +21,11 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@iota/sdk": "^1.0.0",
+    "@iota/iota-sdk": "^1.7.1",
     "@mysten/dapp-kit": "^0.19.9",
     "@mysten/wallet-standard": "^0.19.7",
     "axios": "^1.13.2",
+    "bech32": "^2.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
