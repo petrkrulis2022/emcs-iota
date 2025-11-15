@@ -153,7 +153,6 @@ class APIClient {
     // Extract the data object
     if (response.data.data) {
       return {
-        success: response.data.success,
         ...response.data.data,
       };
     }
