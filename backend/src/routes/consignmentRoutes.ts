@@ -282,6 +282,11 @@ router.get('/all', async (req: Request, res: Response, next: NextFunction) => {
     // Get all consignments from store
     const allConsignments = Array.from(consignmentStore.values());
 
+    // Sort by creation date - newest first (so real blockchain consignments appear on top)
+    allConsignments.sort((a, b) => {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+
     console.log(`✅ Found ${allConsignments.length} total consignments`);
 
     res.json({
@@ -486,6 +491,11 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
       );
       console.log(`🔍 Filtered to ${filteredConsignments.length} consignments with status: ${status}`);
     }
+
+    // Sort by creation date - newest first (real blockchain consignments on top)
+    filteredConsignments.sort((a: Consignment, b: Consignment) => {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
 
     console.log(`✅ Found ${filteredConsignments.length} consignments`);
 

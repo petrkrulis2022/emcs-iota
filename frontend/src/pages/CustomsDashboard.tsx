@@ -5,6 +5,7 @@ import { apiClient } from '../services/apiClient';
 import SkeletonLoader from '../components/SkeletonLoader';
 import ConsignmentPrintPDF from '../components/ConsignmentPrintPDF';
 import IOTAExplorerModal from '../components/IOTAExplorerModal';
+import WalletButton from '../components/WalletButton';
 
 type DirectionFilter = 'all' | 'exports' | 'imports';
 type StatusFilter = 'all' | 'active' | 'in-transit' | 'closed';
@@ -157,12 +158,16 @@ export default function CustomsDashboard() {
               <h1 className="text-3xl font-bold mb-2">🇮🇪 Irish Revenue Customs Portal</h1>
               <p className="text-emerald-100">EMCS Monitoring & Oversight System</p>
             </div>
-            <button
-              onClick={handleLogout}
-              className="bg-white text-emerald-600 px-6 py-2 rounded-lg font-semibold hover:bg-emerald-50 transition-colors"
-            >
-              Logout
-            </button>
+            <div className="flex items-center gap-4">
+              {/* IOTA Wallet Connection */}
+              <WalletButton />
+              <button
+                onClick={handleLogout}
+                className="bg-white text-emerald-600 px-6 py-2 rounded-lg font-semibold hover:bg-emerald-50 transition-colors"
+              >
+                Logout
+              </button>
+            </div>
           </div>
         </div>
 
