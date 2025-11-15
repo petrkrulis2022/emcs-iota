@@ -381,33 +381,13 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
     const arc = await arcGenerator.generateARC();
     console.log(`✅ Generated ARC: ${arc}`);
 
-    // Build transaction to call Move create_consignment function
-    const transactionId = await iotaService.executeTransaction(
-      (tx: any) => {
-        // TODO: Implement actual Move call when SDK is available
-        // tx.moveCall({
-        //   target: `${contractAddress}::consignment::create_consignment`,
-        //   arguments: [
-        //     tx.pure(arc),
-        //     tx.pure(consignor),
-        //     tx.pure(consignee),
-        //     tx.pure(goodsType),
-        //     tx.pure(quantity),
-        //     tx.pure(unit),
-        //     tx.pure(origin),
-        //     tx.pure(destination),
-        //     tx.pure(beerName || ''),
-        //     tx.pure(alcoholPercentage ? Math.round(alcoholPercentage * 10) : 0),
-        //   ],
-        // });
-      },
-      consignor
-    );
-
-    console.log(`✅ Consignment created with transaction: ${transactionId}`);
-
-    // For now, use transaction ID as consignment ID
+    // For now, use mock transaction until frontend wallet signing is implemented
+    // TODO: Implement frontend wallet signing for real blockchain transactions
+    const transactionId = await iotaService.executeTransaction(() => {}, consignor);
     const consignmentId = transactionId;
+    
+    console.log(`✅ Consignment created with transaction: ${transactionId}`);
+    console.log(`⚠️  Note: Using mock transaction. Real blockchain integration requires frontend wallet signing.`);
 
     // Store consignment in memory for demo mode
     const consignment: Consignment = {
@@ -859,6 +839,16 @@ router.get('/:arc/verify', async (req: Request, res: Response, next: NextFunctio
 
       res.json(response);
     }
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET endpoint to generate ARC
+router.get('/arc/generate', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const arc = await arcGenerator.generateARC();
+    res.json({ arc });
   } catch (error) {
     next(error);
   }

@@ -105,7 +105,7 @@ export default function MovementTimeline({ events }: MovementTimelineProps) {
 
   const getExplorerUrl = (transactionId: string) => {
     // IOTA testnet explorer URL - adjust based on actual explorer
-    return `https://explorer.iota.org/transaction/${transactionId}`;
+    return `https://explorer.iota.org/txblock/${transactionId}?network=testnet`;
   };
 
   if (sortedEvents.length === 0) {

@@ -54,7 +54,7 @@ export default function SuccessModal({
   };
 
   // IOTA Explorer URL (using testnet)
-  const explorerUrl = `https://explorer.iota.org/testnet/transaction/${transactionId}`;
+  const explorerUrl = `https://explorer.iota.org/txblock/${transactionId}?network=testnet`;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">

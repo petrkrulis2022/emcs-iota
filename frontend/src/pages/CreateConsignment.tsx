@@ -1,12 +1,16 @@
 import { useState } from 'react';
 import { useWalletStore } from '../stores/useWalletStore';
+import { useCurrentAccount } from '@iota/dapp-kit';
 import { apiClient } from '../services/apiClient';
+import { useBlockchainTransaction } from '../hooks/useBlockchainTransaction';
 import ConsignmentForm, { type ConsignmentFormData } from '../components/ConsignmentForm';
 import SuccessModal from '../components/SuccessModal';
 import { showSuccessNotification, showErrorNotification } from '../utils/notifications';
 
 export default function CreateConsignment() {
   const { walletAddress } = useWalletStore();
+  const currentAccount = useCurrentAccount();
+  const { createConsignment: createOnBlockchain } = useBlockchainTransaction();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [createdArc, setCreatedArc] = useState('');
@@ -20,11 +24,16 @@ export default function CreateConsignment() {
       return;
     }
 
+    if (!currentAccount) {
+      showErrorNotification('Please connect your IOTA Wallet to create blockchain transactions');
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
 
     try {
-      // Call API to create consignment
+      // Step 1: Call backend API to create consignment (it generates ARC and saves to DB)
       const response = await apiClient.createConsignment({
         consignor: walletAddress,
         consignee: formData.consignee,
@@ -41,12 +50,34 @@ export default function CreateConsignment() {
         alcoholPercentage: formData.alcoholPercentage ? parseFloat(formData.alcoholPercentage) : undefined,
       });
 
+      const arc = response.arc;
+
+      // Step 2: Show notification to approve wallet transaction
+      showSuccessNotification('Please approve the blockchain transaction in your wallet...', arc);
+
+      // Step 3: Create consignment on blockchain (wallet popup will appear here!)
+      const blockchainResult = await createOnBlockchain({
+        arc,
+        consignee: formData.consignee,
+        goodsType: formData.goodsType,
+        quantity: parseFloat(formData.quantity),
+        unit: formData.unit,
+        origin: formData.origin,
+        destination: formData.destination,
+        beerName: formData.beerName,
+        alcoholPercentage: formData.alcoholPercentage ? parseFloat(formData.alcoholPercentage) : undefined,
+      });
+
+      console.log('✅ Blockchain transaction successful!');
+      console.log('   Digest:', blockchainResult.digest);
+      console.log('   Object ID:', blockchainResult.consignmentId);
+
       // Store response data
-      setCreatedArc(response.arc);
-      setTransactionId(response.transactionId);
+      setCreatedArc(arc);
+      setTransactionId(blockchainResult.digest);
 
       // Show success notification
-      showSuccessNotification('Consignment created successfully!', response.transactionId);
+      showSuccessNotification('Consignment created on blockchain!', blockchainResult.digest);
 
       // Show success modal
       setShowSuccessModal(true);
@@ -56,11 +87,15 @@ export default function CreateConsignment() {
       // Handle different error types
       let errorMessage = 'An unexpected error occurred. Please try again.';
 
-      if (err.message.includes('400')) {
+      if (err.message?.includes('User rejected') || err.message?.includes('rejected')) {
+        errorMessage = 'Transaction rejected. Please approve the transaction in your wallet.';
+      } else if (err.message?.includes('Insufficient')) {
+        errorMessage = 'Insufficient IOTA tokens. Please get testnet tokens from the faucet.';
+      } else if (err.message?.includes('400')) {
         errorMessage = 'Validation error: Please check your input and try again.';
-      } else if (err.message.includes('500')) {
+      } else if (err.message?.includes('500')) {
         errorMessage = 'Blockchain error: Unable to create consignment. Please try again.';
-      } else if (err.message.includes('Network error')) {
+      } else if (err.message?.includes('Network error')) {
         errorMessage = 'Network error: Unable to reach the server. Please check your connection.';
       } else if (err.message) {
         errorMessage = err.message;
