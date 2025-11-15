@@ -8,6 +8,7 @@ import MovementTimeline from '../components/MovementTimeline';
 import SkeletonLoader from '../components/SkeletonLoader';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ConsignmentPrintPDF from '../components/ConsignmentPrintPDF';
+import IOTAExplorerModal from '../components/IOTAExplorerModal';
 import { showSuccessNotification, showErrorNotification } from '../utils/notifications';
 
 export default function ConsignmentDetail() {
@@ -19,6 +20,7 @@ export default function ConsignmentDetail() {
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [showPrintModal, setShowPrintModal] = useState(false);
+  const [showIOTAExplorer, setShowIOTAExplorer] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -464,9 +466,25 @@ export default function ConsignmentDetail() {
           )}
         </div>
         {consignment.documentHash && (
-          <div className="mt-4">
-            <p className="text-sm text-gray-500">Document Hash</p>
-            <p className="text-base font-mono text-gray-900 break-all">
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm font-semibold text-gray-700">Blockchain Verification (e-AD Document Hash)</p>
+              <button
+                onClick={() => setShowIOTAExplorer(true)}
+                className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg text-sm font-medium"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <span>Verify on IOTA</span>
+              </button>
+            </div>
+            <p className="text-xs font-mono text-gray-700 break-all bg-gray-50 p-3 rounded border border-gray-200">
               {consignment.documentHash}
             </p>
           </div>
@@ -527,6 +545,11 @@ export default function ConsignmentDetail() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* IOTA Explorer Modal */}
+      {showIOTAExplorer && consignment && (
+        <IOTAExplorerModal consignment={consignment} onClose={() => setShowIOTAExplorer(false)} />
       )}
     </div>
   );
