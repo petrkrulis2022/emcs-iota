@@ -23,6 +23,7 @@ The EMCS Blockchain Demo digitizes the EU's Electronic Movement and Control Syst
   - **Operator Registry**: `0xd0e6ce2e96b968720b8591de18a11a1c23c7bf35b31b9f47c9d644ff7404caff`
   - **Transaction**: [View on Explorer](https://explorer.iota.cafe/txblock/3BEWkH5GTNP5WeidbanBQxy5DYs7go4H2TvgXNnUcuzf?network=testnet)
   - **Network**: IOTA Testnet
+  - 📖 **[Smart Contracts Integration Guide](SMART_CONTRACTS_INTEGRATION_GUIDE.md)** - Complete guide on how contracts are used in the app
 
 ## ✨ Key Features
 
