@@ -33,10 +33,12 @@ export default function CreateConsignment() {
         unit: formData.unit,
         origin: formData.origin,
         destination: formData.destination,
-        transportMode: formData.transportMode,
+        transportModes: formData.transportModes,
         vehicleLicensePlate: formData.vehicleLicensePlate,
         containerNumber: formData.containerNumber,
         beerPackaging: formData.beerPackaging,
+        beerName: formData.beerName,
+        alcoholPercentage: formData.alcoholPercentage ? parseFloat(formData.alcoholPercentage) : undefined,
       });
 
       // Store response data

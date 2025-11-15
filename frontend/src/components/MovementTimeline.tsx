@@ -5,6 +5,11 @@ interface MovementTimelineProps {
 }
 
 export default function MovementTimeline({ events }: MovementTimelineProps) {
+  // Ensure events is an array
+  if (!events || !Array.isArray(events)) {
+    return <div className="text-center text-gray-500 py-8">No movement events recorded yet.</div>;
+  }
+
   // Sort events chronologically (oldest first)
   const sortedEvents = [...events].sort(
     (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()

@@ -73,7 +73,7 @@ export default function BeerPackagingCalculator({ onChange }: BeerPackagingCalcu
         {/* Can Size */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Can Size (Objem Plechovky) *
+            Can Size *
           </label>
           <select
             value={canSize}
@@ -91,7 +91,7 @@ export default function BeerPackagingCalculator({ onChange }: BeerPackagingCalcu
         {/* Cans per Package */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Cans per Package (Plechovky na Balení) *
+            Cans per Package *
           </label>
           <select
             value={cansPerPackage}
@@ -109,7 +109,7 @@ export default function BeerPackagingCalculator({ onChange }: BeerPackagingCalcu
         {/* Number of Packages */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Number of Packages (Počet Balení) *
+            Number of Packages *
           </label>
           <input
             type="number"

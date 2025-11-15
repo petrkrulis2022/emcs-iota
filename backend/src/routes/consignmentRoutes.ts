@@ -3,6 +3,7 @@ import { arcGenerator } from '../services/arcGenerator.js';
 import { iotaService } from '../services/iotaService.js';
 import { notarizationService } from '../services/notarizationService.js';
 import { lookupOperator } from '../services/seedRegistry.js';
+import { calculateIrishBeerDuty } from '../services/exciseDutyCalculator.js';
 import { AppError } from '../middleware/errorHandler.js';
 import {
   CreateConsignmentRequest,
@@ -15,6 +16,7 @@ import {
   ReceiveConsignmentResponse,
   Consignment,
   MovementEvent,
+  EventType,
 } from '../types/index.js';
 
 const router = Router();
@@ -42,7 +44,7 @@ const initializeMockData = () => {
       createdAt: '2024-11-10T08:30:00Z',
       dispatchedAt: '2024-11-10T14:20:00Z',
       transactionId: 'tx_mock_001',
-      transportMode: 'Road',
+      transportModes: ['Road'],
       vehicleLicensePlate: '1AB-2345',
       documentHash: '0xabc123...',
       consignorInfo: {
@@ -72,7 +74,7 @@ const initializeMockData = () => {
       status: 'Draft' as ConsignmentStatus,
       createdAt: '2024-11-13T10:15:00Z',
       transactionId: 'tx_mock_002',
-      transportMode: 'Road',
+      transportModes: ['Road'],
       vehicleLicensePlate: 'M-AB-1234',
       beerPackaging: {
         canSize: 500,
@@ -110,7 +112,7 @@ const initializeMockData = () => {
       dispatchedAt: '2024-11-08T15:30:00Z',
       receivedAt: '2024-11-11T11:45:00Z',
       transactionId: 'tx_mock_003',
-      transportMode: 'Sea',
+      transportModes: ['Sea'],
       containerNumber: 'CONT123456',
       documentHash: '0xdef456...',
       consignorInfo: {
@@ -141,7 +143,7 @@ const initializeMockData = () => {
       createdAt: '2024-11-12T07:20:00Z',
       dispatchedAt: '2024-11-12T13:00:00Z',
       transactionId: 'tx_mock_004',
-      transportMode: 'Road',
+      transportModes: ['Road'],
       vehicleLicensePlate: 'WA-12345',
       documentHash: '0xghi789...',
       consignorInfo: {
@@ -172,7 +174,7 @@ const initializeMockData = () => {
       createdAt: '2024-11-11T09:00:00Z',
       dispatchedAt: '2024-11-11T15:30:00Z',
       transactionId: 'tx_mock_006',
-      transportMode: 'Road',
+      transportModes: ['Road'],
       vehicleLicensePlate: 'CZ-1234',
       documentHash: '0xjkl012...',
       beerPackaging: {
@@ -209,7 +211,7 @@ const initializeMockData = () => {
       status: 'Draft' as ConsignmentStatus,
       createdAt: '2024-11-14T06:00:00Z',
       transactionId: 'tx_mock_005',
-      transportMode: 'Road',
+      transportModes: ['Road'],
       vehicleLicensePlate: 'NL-AB-12',
       consignorInfo: {
         seedNumber: 'NL00222333444',
@@ -235,7 +237,7 @@ const initializeMockData = () => {
     // Add corresponding events
     const events: MovementEvent[] = [
       {
-        type: 'Created',
+        type: EventType.CREATED,
         timestamp: consignment.createdAt,
         actor: consignment.consignor,
         transactionId: consignment.transactionId || '',
@@ -244,7 +246,7 @@ const initializeMockData = () => {
     
     if (consignment.dispatchedAt) {
       events.push({
-        type: 'Dispatched',
+        type: EventType.DISPATCHED,
         timestamp: consignment.dispatchedAt,
         actor: consignment.consignor,
         transactionId: consignment.transactionId || '',
@@ -254,7 +256,7 @@ const initializeMockData = () => {
     
     if (consignment.receivedAt) {
       events.push({
-        type: 'Received',
+        type: EventType.RECEIVED,
         timestamp: consignment.receivedAt,
         actor: consignment.consignee,
         transactionId: consignment.transactionId || '',
@@ -304,9 +306,11 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
       unit,
       origin,
       destination,
-      transportMode,
+      transportModes,
       vehicleLicensePlate,
       containerNumber,
+      beerName,
+      alcoholPercentage,
     } = req.body as CreateConsignmentRequest;
 
     // Validate request body
@@ -322,6 +326,16 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
     // Validate addresses (basic check)
     if (!consignor.startsWith('0x') || !consignee.startsWith('0x')) {
       throw new AppError('Invalid IOTA address format', 400);
+    }
+
+    // Validate beer-specific fields
+    if (goodsType === 'Beer') {
+      if (!beerName || !alcoholPercentage) {
+        throw new AppError('Beer consignments require beerName and alcoholPercentage', 400);
+      }
+      if (typeof alcoholPercentage !== 'number' || alcoholPercentage <= 0 || alcoholPercentage > 100) {
+        throw new AppError('Alcohol percentage must be between 0 and 100', 400);
+      }
     }
 
     // Lookup SEED operator information
@@ -355,6 +369,13 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
 
     console.log('📦 Creating new consignment...');
 
+    // Calculate excise duty for Irish beer consignments
+    let exciseDutyAmount: number | undefined;
+    if (goodsType === 'Beer' && alcoholPercentage && consigneeInfo.country === 'Ireland') {
+      exciseDutyAmount = calculateIrishBeerDuty(quantity, alcoholPercentage);
+      console.log(`💶 Calculated Irish beer excise duty: €${exciseDutyAmount.toFixed(2)}`);
+    }
+
     // Generate unique ARC
     const arc = await arcGenerator.generateARC();
     console.log(`✅ Generated ARC: ${arc}`);
@@ -374,6 +395,8 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
         //     tx.pure(unit),
         //     tx.pure(origin),
         //     tx.pure(destination),
+        //     tx.pure(beerName || ''),
+        //     tx.pure(alcoholPercentage ? Math.round(alcoholPercentage * 10) : 0),
         //   ],
         // });
       },
@@ -398,9 +421,12 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
       status: 'Draft' as ConsignmentStatus,
       createdAt: new Date().toISOString(),
       transactionId,
-      transportMode,
+      transportModes,
       vehicleLicensePlate,
       containerNumber,
+      beerName,
+      alcoholPercentage,
+      exciseDutyAmount,
       consignorInfo: {
         seedNumber: consignorInfo.seedNumber,
         companyName: consignorInfo.companyName,
@@ -420,7 +446,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
 
     // Store creation event
     const creationEvent: MovementEvent = {
-      type: 'Created',
+      type: EventType.CREATED,
       timestamp: new Date().toISOString(),
       actor: consignor,
       transactionId,

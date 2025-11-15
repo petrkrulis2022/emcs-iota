@@ -35,7 +35,7 @@ export default function AllConsignments() {
     return (
       <div>
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-xl p-6 mb-6">
-          <h1 className="text-3xl font-bold text-white mb-2">All Consignments</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">My Consignments</h1>
           <p className="text-blue-100">View all EMCS consignments in the system</p>
         </div>
         <SkeletonLoader type="table" count={5} />
@@ -47,7 +47,7 @@ export default function AllConsignments() {
     return (
       <div>
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-xl p-6 mb-6">
-          <h1 className="text-3xl font-bold text-white mb-2">All Consignments</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">My Consignments</h1>
           <p className="text-blue-100">View all EMCS consignments in the system</p>
         </div>
         <div className="bg-red-50 border border-red-200 rounded-lg p-6">
@@ -81,7 +81,7 @@ export default function AllConsignments() {
     <div>
       {/* Header Section */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-xl p-6 mb-6">
-        <h1 className="text-3xl font-bold text-white mb-2">All Consignments</h1>
+        <h1 className="text-3xl font-bold text-white mb-2">My Consignments</h1>
         <p className="text-blue-100">View all EMCS consignments in the system (Mock Data)</p>
       </div>
 

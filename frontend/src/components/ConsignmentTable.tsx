@@ -111,6 +111,11 @@ export default function ConsignmentTable({
     }
   };
 
+  const handlePrint = (arc: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/consignment/${arc}?print=true`);
+  };
+
   const canDispatch = (consignment: Consignment): boolean => {
     return (
       isConnected &&
@@ -128,35 +133,59 @@ export default function ConsignmentTable({
   };
 
   const renderActionButton = (consignment: Consignment) => {
+    const printButton = (
+      <button
+        onClick={e => handlePrint(consignment.arc, e)}
+        className="px-3 py-1 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition-colors flex items-center space-x-1 min-h-[44px]"
+        title="Print PDF"
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+          />
+        </svg>
+        <span>Print</span>
+      </button>
+    );
+
     if (canDispatch(consignment)) {
       const isLoading = loadingAction === `dispatch-${consignment.arc}`;
       return (
-        <button
-          onClick={e => handleDispatch(consignment.arc, e)}
-          disabled={isLoading}
-          className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors flex items-center space-x-1 min-h-[44px]"
-        >
-          {isLoading && <LoadingSpinner size="sm" color="white" />}
-          <span>{isLoading ? 'Dispatching...' : 'Dispatch'}</span>
-        </button>
+        <div className="flex items-center space-x-2">
+          {printButton}
+          <button
+            onClick={e => handleDispatch(consignment.arc, e)}
+            disabled={isLoading}
+            className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors flex items-center space-x-1 min-h-[44px]"
+          >
+            {isLoading && <LoadingSpinner size="sm" color="white" />}
+            <span>{isLoading ? 'Dispatching...' : 'Dispatch'}</span>
+          </button>
+        </div>
       );
     }
 
     if (canReceive(consignment)) {
       const isLoading = loadingAction === `receive-${consignment.arc}`;
       return (
-        <button
-          onClick={e => handleReceive(consignment.arc, e)}
-          disabled={isLoading}
-          className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 disabled:bg-green-400 disabled:cursor-not-allowed transition-colors flex items-center space-x-1 min-h-[44px]"
-        >
-          {isLoading && <LoadingSpinner size="sm" color="white" />}
-          <span>{isLoading ? 'Confirming...' : 'Confirm Receipt'}</span>
-        </button>
+        <div className="flex items-center space-x-2">
+          {printButton}
+          <button
+            onClick={e => handleReceive(consignment.arc, e)}
+            disabled={isLoading}
+            className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 disabled:bg-green-400 disabled:cursor-not-allowed transition-colors flex items-center space-x-1 min-h-[44px]"
+          >
+            {isLoading && <LoadingSpinner size="sm" color="white" />}
+            <span>{isLoading ? 'Confirming...' : 'Confirm Receipt'}</span>
+          </button>
+        </div>
       );
     }
 
-    return null;
+    return printButton;
   };
 
   return (

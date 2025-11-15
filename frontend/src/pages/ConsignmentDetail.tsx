@@ -7,6 +7,7 @@ import QRCodeDisplay from '../components/QRCodeDisplay';
 import MovementTimeline from '../components/MovementTimeline';
 import SkeletonLoader from '../components/SkeletonLoader';
 import LoadingSpinner from '../components/LoadingSpinner';
+import ConsignmentPrintPDF from '../components/ConsignmentPrintPDF';
 import { showSuccessNotification, showErrorNotification } from '../utils/notifications';
 
 export default function ConsignmentDetail() {
@@ -17,6 +18,7 @@ export default function ConsignmentDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [showPrintModal, setShowPrintModal] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -33,7 +35,7 @@ export default function ConsignmentDetail() {
         ]);
 
         setConsignment(consignmentData);
-        setEvents(eventsData.events);
+        setEvents(eventsData?.events || []);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to load consignment';
         setError(errorMessage);
@@ -65,7 +67,7 @@ export default function ConsignmentDetail() {
         apiClient.getConsignmentEvents(arc),
       ]);
       setConsignment(consignmentData);
-      setEvents(eventsData.events);
+      setEvents(eventsData?.events || []);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to dispatch consignment';
       showErrorNotification(errorMessage);
@@ -89,7 +91,7 @@ export default function ConsignmentDetail() {
         apiClient.getConsignmentEvents(arc),
       ]);
       setConsignment(consignmentData);
-      setEvents(eventsData.events);
+      setEvents(eventsData?.events || []);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to confirm receipt';
       showErrorNotification(errorMessage);
@@ -139,23 +141,43 @@ export default function ConsignmentDetail() {
   return (
     <div className="space-y-6">
       {/* Header Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-xl p-6">
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-xl p-6 print:hidden">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h1 className="text-3xl font-bold text-white mb-2">Consignment Details</h1>
             <p className="text-blue-100 font-mono text-sm">ARC: {consignment.arc}</p>
           </div>
-          <span
-            className={`px-4 py-2 rounded-full text-sm font-semibold shadow-lg ${getStatusColor(consignment.status)}`}
-          >
-            {consignment.status}
-          </span>
+          <div className="flex items-center space-x-3">
+            <span
+              className={`px-4 py-2 rounded-full text-sm font-semibold shadow-lg ${getStatusColor(consignment.status)}`}
+            >
+              {consignment.status || 'Draft'}
+            </span>
+          </div>
         </div>
+      </div>
+
+      {/* Print PDF Button */}
+      <div className="print:hidden">
+        <button
+          onClick={() => setShowPrintModal(true)}
+          className="flex items-center space-x-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-md hover:shadow-lg"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+            />
+          </svg>
+          <span className="font-medium">Print Consignment PDF</span>
+        </button>
       </div>
 
       {/* Action Buttons */}
       {(canDispatch || canReceive) && (
-        <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+        <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 print:hidden">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 sm:space-x-4">
             {canDispatch && (
               <button
@@ -194,7 +216,7 @@ export default function ConsignmentDetail() {
       )}
 
       {/* QR Code Section */}
-      <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+      <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 print:hidden">
         <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 text-center">QR Code</h2>
         <div className="flex justify-center">
           <QRCodeDisplay arc={consignment.arc} />
@@ -202,7 +224,7 @@ export default function ConsignmentDetail() {
       </div>
 
       {/* Shipment Information Section */}
-      <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+      <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 print:hidden">
         <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">
           Shipment Information
         </h2>
@@ -226,6 +248,45 @@ export default function ConsignmentDetail() {
             <p className="text-base font-medium text-gray-900">{consignment.destination}</p>
           </div>
         </div>
+
+        {/* Beer-Specific Information */}
+        {consignment.goodsType === 'Beer' && (consignment.beerName || consignment.alcoholPercentage) && (
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <h3 className="text-md font-semibold text-gray-900 mb-3 flex items-center">
+              <svg className="w-5 h-5 mr-2 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" />
+              </svg>
+              Beer Information
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {consignment.beerName && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                  <p className="text-sm text-gray-600">Beer Name</p>
+                  <p className="text-lg font-bold text-gray-900">{consignment.beerName}</p>
+                </div>
+              )}
+              {consignment.alcoholPercentage && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                  <p className="text-sm text-gray-600">Alcohol by Volume (ABV)</p>
+                  <p className="text-lg font-bold text-gray-900">
+                    {consignment.alcoholPercentage.toFixed(1)}%
+                  </p>
+                </div>
+              )}
+              {consignment.exciseDutyAmount && consignment.exciseDutyAmount > 0 && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <p className="text-sm text-gray-600">Irish Excise Duty</p>
+                  <p className="text-lg font-bold text-green-700">
+                    €{consignment.exciseDutyAmount.toFixed(2)}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Based on Irish Revenue rates
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Beer Packaging Details */}
         {consignment.goodsType === 'Beer' && consignment.beerPackaging && (
@@ -291,7 +352,7 @@ export default function ConsignmentDetail() {
       </div>
 
       {/* Parties Section */}
-      <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+      <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 print:hidden">
         <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Parties</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Consignor */}
@@ -343,16 +404,18 @@ export default function ConsignmentDetail() {
       </div>
 
       {/* Transport Details Section */}
-      {(consignment.transportMode ||
+      {(consignment.transportModes?.length ||
         consignment.vehicleLicensePlate ||
         consignment.containerNumber) && (
         <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
           <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Transport Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {consignment.transportMode && (
+            {consignment.transportModes && consignment.transportModes.length > 0 && (
               <div>
-                <p className="text-sm text-gray-500">Transport Mode</p>
-                <p className="text-base font-medium text-gray-900">{consignment.transportMode}</p>
+                <p className="text-sm text-gray-500">Transport Modes</p>
+                <p className="text-base font-medium text-gray-900">
+                  {consignment.transportModes.join(', ')}
+                </p>
               </div>
             )}
             {consignment.vehicleLicensePlate && (
@@ -411,12 +474,60 @@ export default function ConsignmentDetail() {
       </div>
 
       {/* Movement History Section */}
-      <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+      <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 print:hidden">
         <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 sm:mb-6">
           Movement History
         </h2>
         <MovementTimeline events={events} />
       </div>
+
+      {/* Print Modal */}
+      {showPrintModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto print:relative print:z-auto">
+          <div className="fixed inset-0 bg-black bg-opacity-50 print:hidden" onClick={() => setShowPrintModal(false)}></div>
+          
+          <div className="flex min-h-full items-center justify-center p-4 print:p-0">
+            <div className="relative bg-white rounded-lg shadow-xl max-w-4xl w-full p-6 print:shadow-none print:max-w-none">
+              {/* Modal Header */}
+              <div className="flex justify-between items-center mb-4 print:hidden">
+                <h3 className="text-xl font-bold text-gray-900">Consignment Details</h3>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => window.print()}
+                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+                      />
+                    </svg>
+                    <span>Print PDF</span>
+                  </button>
+                  <button
+                    onClick={() => setShowPrintModal(false)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              {/* PDF Content */}
+              <ConsignmentPrintPDF consignment={consignment} showOnScreen={true} hideButton={true} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

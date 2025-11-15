@@ -31,12 +31,15 @@ export interface Consignment {
   dispatchedAt?: string;
   receivedAt?: string;
   transactionId?: string;
-  transportMode?: string;
+  transportModes?: string[];
   vehicleLicensePlate?: string;
   containerNumber?: string;
   consignorInfo?: OperatorInfo;
   consigneeInfo?: OperatorInfo;
   beerPackaging?: BeerPackagingData;
+  beerName?: string;
+  alcoholPercentage?: number;
+  exciseDutyAmount?: number;
 }
 
 interface ConsignmentState {

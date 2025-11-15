@@ -23,10 +23,13 @@ export interface ConsignmentFormData {
   unit: string;
   origin: string;
   destination: string;
-  transportMode?: string;
+  transportModes: string[];
   vehicleLicensePlate?: string;
   containerNumber?: string;
   beerPackaging?: BeerPackagingData;
+  beerName?: string;
+  alcoholPercentage?: string;
+  exciseDutyAmount?: number;
 }
 
 interface FormErrors {
@@ -40,7 +43,7 @@ interface FormErrors {
 
 const GOODS_TYPES = ['Wine', 'Beer', 'Spirits', 'Tobacco', 'Energy'];
 const UNITS = ['Liters', 'Kilograms', 'Units'];
-const TRANSPORT_MODES = ['Road', 'Rail', 'Sea', 'Air'];
+const TRANSPORT_MODES = ['Road', 'Rail', 'Sea'];
 
 // Basic IOTA address validation (0x followed by hex characters)
 const isValidIOTAAddress = (address: string): boolean => {
@@ -61,9 +64,11 @@ export default function ConsignmentForm({
     unit: '',
     origin: '',
     destination: '',
-    transportMode: '',
+    transportModes: [],
     vehicleLicensePlate: '',
     containerNumber: '',
+    beerName: '',
+    alcoholPercentage: '',
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -83,6 +88,20 @@ export default function ConsignmentForm({
     if (errors[name as keyof FormErrors]) {
       setErrors(prev => ({ ...prev, [name]: undefined }));
     }
+  };
+
+  const handleTransportModeChange = (mode: string) => {
+    setFormData(prev => {
+      const currentModes = prev.transportModes || [];
+      const isSelected = currentModes.includes(mode);
+      
+      return {
+        ...prev,
+        transportModes: isSelected
+          ? currentModes.filter(m => m !== mode)
+          : [...currentModes, mode]
+      };
+    });
   };
 
   const handleBeerPackagingChange = (totalLiters: number, packagingData: BeerPackagingData) => {
@@ -117,6 +136,30 @@ export default function ConsignmentForm({
     setTouched(prev => ({ ...prev, [field]: true }));
     validateField(field);
   };
+
+  // Calculate Irish excise duty for beer
+  const calculateExciseDuty = (): number | null => {
+    if (formData.goodsType !== 'Beer') return null;
+    if (!formData.quantity || !formData.alcoholPercentage) return null;
+    
+    const quantity = parseFloat(formData.quantity);
+    const abv = parseFloat(formData.alcoholPercentage);
+    
+    if (quantity <= 0 || abv <= 0) return null;
+    
+    // Convert liters to hectolitres
+    const hectolitres = quantity / 100;
+    
+    // Determine rate based on ABV threshold (2.8%)
+    const ratePerHl = abv <= 2.8 ? 11.27 : 22.55;
+    
+    // Calculate duty: Rate × hectolitres × ABV
+    const duty = ratePerHl * hectolitres * abv;
+    
+    return duty;
+  };
+
+  const exciseDuty = calculateExciseDuty();
 
   const validateField = (field: string): boolean => {
     const newErrors: FormErrors = { ...errors };
@@ -217,11 +260,20 @@ export default function ConsignmentForm({
       return;
     }
 
-    await onSubmit(formData);
+    // Calculate and add excise duty for beer consignments
+    const submissionData = { ...formData };
+    if (formData.goodsType === 'Beer' && formData.alcoholPercentage && formData.quantity) {
+      const dutyAmount = calculateExciseDuty();
+      if (dutyAmount !== null) {
+        submissionData.exciseDutyAmount = dutyAmount;
+      }
+    }
+
+    await onSubmit(submissionData);
   };
 
   const isFormValid = () => {
-    return (
+    const baseValid = (
       isConnected &&
       formData.consignee &&
       formData.goodsType &&
@@ -233,6 +285,17 @@ export default function ConsignmentForm({
       isValidIOTAAddress(formData.consignee) &&
       Object.keys(errors).length === 0
     );
+
+    // Additional validation for beer consignments
+    if (formData.goodsType === 'Beer') {
+      return baseValid && 
+        formData.beerName && 
+        formData.alcoholPercentage && 
+        parseFloat(formData.alcoholPercentage) > 0 &&
+        parseFloat(formData.alcoholPercentage) <= 100;
+    }
+
+    return baseValid;
   };
 
   return (
@@ -318,7 +381,85 @@ export default function ConsignmentForm({
 
       {/* Beer Packaging Calculator - Show only when Beer is selected */}
       {formData.goodsType === 'Beer' && (
-        <BeerPackagingCalculator onChange={handleBeerPackagingChange} />
+        <>
+          <BeerPackagingCalculator onChange={handleBeerPackagingChange} />
+          
+          {/* Beer Name */}
+          <div>
+            <label htmlFor="beerName" className="block text-sm font-medium text-gray-700 mb-1">
+              Beer Name *
+            </label>
+            <input
+              type="text"
+              id="beerName"
+              name="beerName"
+              value={formData.beerName}
+              onChange={handleChange}
+              disabled={isSubmitting}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px]"
+              placeholder="e.g., Pilsner Urquell"
+            />
+          </div>
+
+          {/* Alcohol Percentage */}
+          <div>
+            <label htmlFor="alcoholPercentage" className="block text-sm font-medium text-gray-700 mb-1">
+              Alcohol by Volume (ABV %) *
+            </label>
+            <input
+              type="number"
+              id="alcoholPercentage"
+              name="alcoholPercentage"
+              value={formData.alcoholPercentage}
+              onChange={handleChange}
+              disabled={isSubmitting}
+              min="0"
+              max="100"
+              step="0.1"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px]"
+              placeholder="e.g., 4.4"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Enter the alcohol percentage (e.g., 4.4 for 4.4% ABV)
+            </p>
+          </div>
+
+          {/* Excise Duty Calculation Display */}
+          {exciseDuty !== null && exciseDuty > 0 && (
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-4 border-green-500 rounded-xl p-6 shadow-lg">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="bg-green-500 rounded-full p-3">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">Irish Excise Duty</p>
+                    <p className="text-4xl font-black text-green-700">
+                      €{exciseDuty.toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-gray-500">Based on:</p>
+                  <p className="text-sm font-semibold text-gray-700">{parseFloat(formData.quantity || '0').toFixed(1)} L @ {parseFloat(formData.alcoholPercentage || '0').toFixed(1)}% ABV</p>
+                  <p className="text-xs text-green-600 mt-1">
+                    Rate: €{parseFloat(formData.alcoholPercentage || '0') <= 2.8 ? '11.27' : '22.55'}/hl
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 pt-4 border-t-2 border-green-200">
+                <p className="text-xs text-gray-600 flex items-center">
+                  <svg className="w-4 h-4 mr-1 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                  Automatically calculated per Irish Revenue regulations
+                </p>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* Quantity and Unit - Hide when Beer is selected (calculator handles it) */}
@@ -429,26 +570,25 @@ export default function ConsignmentForm({
       <div className="border-t pt-4">
         <h3 className="text-lg font-medium text-gray-900 mb-4">Transport Details (Optional)</h3>
 
-        {/* Transport Mode */}
+        {/* Transport Modes - Multiple Selection */}
         <div className="mb-4">
-          <label htmlFor="transportMode" className="block text-sm font-medium text-gray-700 mb-1">
-            Transport Mode
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Transport Modes (select one or more)
           </label>
-          <select
-            id="transportMode"
-            name="transportMode"
-            value={formData.transportMode}
-            onChange={handleChange}
-            disabled={isSubmitting}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px]"
-          >
-            <option value="">Select transport mode</option>
+          <div className="space-y-2">
             {TRANSPORT_MODES.map(mode => (
-              <option key={mode} value={mode}>
-                {mode}
-              </option>
+              <label key={mode} className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.transportModes.includes(mode)}
+                  onChange={() => handleTransportModeChange(mode)}
+                  disabled={isSubmitting}
+                  className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                />
+                <span className="text-sm text-gray-700">{mode}</span>
+              </label>
             ))}
-          </select>
+          </div>
         </div>
 
         {/* Vehicle License Plate */}

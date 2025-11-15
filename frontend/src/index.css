@@ -8,3 +8,32 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Print styles for PDF generation */
+@media print {
+  @page {
+    size: A4;
+    margin: 1cm;
+  }
+
+  body {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  /* Hide everything by default */
+  body > * {
+    display: none !important;
+  }
+
+  /* Only show the print content */
+  .print\:block {
+    display: block !important;
+  }
+
+  /* Ensure colors and backgrounds print */
+  * {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}

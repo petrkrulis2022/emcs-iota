@@ -100,6 +100,278 @@ This is a monorepo containing three main components:
 - **Sui Framework** - Move framework
 - **NFT-based** - Consignment representation
 
+## 📦 Smart Contracts Architecture
+
+The project uses IOTA's Move language to implement excise goods tracking with NFT-based consignments.
+
+### 1. **consignment.move** (Main Production Contract) ⭐
+
+**Purpose**: Core consignment tracking for EU excise goods movement
+
+**Key Features**:
+- ✅ **NFT-Based Consignments** - Each shipment is a unique blockchain NFT
+- ✅ **Beer Excise Duty Calculation** - Automatic Irish excise duty calculation
+- ✅ **Multi-Transport Modes** - Support for Road, Rail, Sea (comma-separated)
+- ✅ **Status Workflow** - Draft → In Transit → Received
+- ✅ **Document Notarization** - SHA256 hash storage for e-AD documents
+- ✅ **Timestamping** - Uses IOTA Clock for accurate timestamps
+
+**Consignment NFT Structure**:
+```move
+public struct Consignment has key, store {
+    id: UID,                          // Unique object ID
+    arc: String,                      // EU Administrative Reference Code
+    consignor: address,               // Sender wallet address
+    consignee: address,               // Receiver wallet address
+    goods_type: String,               // Wine, Beer, Spirits, Tobacco, Energy
+    quantity: u64,                    // Amount in liters/kg
+    unit: String,                     // Measurement unit
+    origin: String,                   // Origin location
+    destination: String,              // Destination location
+    transport_modes: vector<String>,  // Multiple transport modes
+    beer_name: Option<String>,        // Beer product name (optional)
+    alcohol_percentage: Option<u64>,  // ABV × 10 (e.g., 44 = 4.4%)
+    excise_duty_cents: Option<u64>,   // Irish duty in euro cents
+    status: u8,                       // 0=Draft, 1=InTransit, 2=Received
+    document_hash: Option<vector<u8>>, // SHA256 hash of e-AD
+    created_at: u64,                  // Creation timestamp
+    dispatched_at: Option<u64>,       // Dispatch timestamp
+    received_at: Option<u64>,         // Receipt timestamp
+}
+```
+
+**Core Functions**:
+1. **`create_consignment()`** - Creates new consignment NFT (Draft status)
+   - Generates unique on-chain object
+   - Parses transport modes from comma-separated string
+   - Calculates Irish beer excise duty automatically
+   - Emits `ConsignmentCreated` event
+   
+2. **`dispatch_consignment()`** - Moves to In Transit
+   - Only consignor authorized
+   - Requires document hash for notarization
+   - Updates status and timestamps
+   - Emits `ConsignmentDispatched` event
+   
+3. **`receive_consignment()`** - Moves to Received
+   - Only consignee authorized
+   - Completes movement cycle
+   - Emits `ConsignmentReceived` event
+
+4. **`calculate_irish_beer_duty()`** - Irish excise duty calculation
+   - **Low ABV (≤2.8%)**: €11.27 per hectolitre
+   - **Standard ABV (>2.8%)**: €22.55 per hectolitre
+   - Formula: `(Rate × hectolitres × ABV) / 10`
+   - Returns duty in euro cents for precision
+
+**Events Emitted**:
+- `ConsignmentCreated` - When consignment created
+- `ConsignmentDispatched` - When dispatched with document hash
+- `ConsignmentReceived` - When received by consignee
+- `MovementEvent` - Generic event for backward compatibility
+
+**Authorization Model**:
+- ✅ Anyone can create consignment
+- ✅ Only consignor can dispatch
+- ✅ Only consignee can receive
+
+---
+
+### 2. **operator_registry.move** (Access Control)
+
+**Purpose**: Manages authorized SEED operators for EMCS compliance
+
+**Key Features**:
+- Admin-controlled registry
+- Add/remove operator addresses
+- Authorization checking for consignment creation
+
+**Registry Structure**:
+```move
+public struct OperatorRegistry has key {
+    id: UID,
+    admin: address,                   // Registry administrator
+    operators: VecMap<address, bool>, // Authorized operators
+}
+```
+
+**Functions**:
+1. **`init()`** - Initializes registry (deployer becomes admin)
+2. **`add_operator()`** - Admin adds authorized operator
+3. **`remove_operator()`** - Admin removes operator
+4. **`is_authorized()`** - Check if address is authorized
+5. **`get_admin()`** - Get admin address
+
+**Use Cases**:
+- Whitelist legitimate SEED operators
+- Restrict consignment creation to registered entities
+- EU compliance for excise goods tracking
+- Enterprise access control
+
+---
+
+### 3. **consignment_enhanced.move** (Advanced Features)
+
+**Purpose**: Enhanced version with cancellation and immutable notarization
+
+**Additional Features**:
+- ✅ **Cancellation Support** - Draft consignments can be cancelled
+- ✅ **Immutable Notarization Records** - Frozen NFT objects for legal proof
+- ✅ **Metadata Field** - Extensible JSON metadata
+- ✅ **Display NFT** - NFT display metadata for wallets/explorers
+- ✅ **4 Status States** - Draft, In Transit, Received, Cancelled
+
+**Notarization Record Structure**:
+```move
+public struct NotarizationRecord has key, store {
+    id: UID,
+    consignment_id: ID,         // Reference to consignment
+    document_hash: vector<u8>,  // SHA256 hash
+    notarized_at: u64,          // Timestamp
+    notarizer: address,         // Who notarized
+    document_type: String,      // "e-AD", "Receipt", etc.
+}
+```
+
+**Enhanced Functions**:
+1. **`cancel_consignment()`** - Cancel draft consignment
+   - Only consignor authorized
+   - Requires cancellation reason
+   - Emits `ConsignmentCancelled` event
+
+2. **`dispatch_consignment()`** - Enhanced version
+   - Creates frozen `NotarizationRecord` NFT
+   - Permanent immutable proof
+   - Dual event emission
+
+3. **`verify_document_hash()`** - Cryptographic verification
+
+**Additional Events**:
+- `ConsignmentCancelled` - When cancelled with reason
+- `DocumentNotarized` - When document permanently notarized
+
+---
+
+### NFT & Consignment Relationship
+
+#### **How Consignments Work as NFTs**
+
+**IOTA/Sui uses an object-based model**, not traditional storage:
+
+1. **Each Consignment = 1 Unique NFT Object**
+   - When `create_consignment()` is called, a new on-chain object is created
+   - Object has unique ID (e.g., `0xabc123...`)
+   - Stored permanently on IOTA blockchain
+   - **Shared object** accessible by both consignor and consignee
+
+2. **No Central Registry**
+   - Consignments are NOT stored in a mapping or array
+   - Each is an independent blockchain object
+   - Objects are "owned" or "shared" between parties
+
+3. **NFT Abilities**
+   ```move
+   public struct Consignment has key, store {
+       // key = can be owned as an object
+       // store = can be stored in other objects
+   }
+   ```
+
+4. **Object Lifecycle**:
+   ```
+   Create → Shared Object (accessible by consignor & consignee)
+          ↓
+   Dispatch → Status update (object mutated)
+          ↓
+   Receive → Final state (object remains on-chain forever)
+   ```
+
+#### **Querying Consignments**
+
+To retrieve consignments from blockchain:
+
+**Method 1: By Object ID**
+```typescript
+// Direct lookup if you know the object ID
+const consignment = await client.getObject({
+    id: '0xabc123...',
+    options: { showContent: true }
+});
+```
+
+**Method 2: By Owner Address**
+```typescript
+// Find all consignments for an operator
+const objects = await client.getOwnedObjects({
+    owner: operatorAddress,
+    filter: { 
+        StructType: "emcs::consignment::Consignment" 
+    }
+});
+```
+
+**Method 3: By Events**
+```typescript
+// Query ConsignmentCreated events to find ARCs
+const events = await client.queryEvents({
+    query: { 
+        MoveEventType: "emcs::consignment::ConsignmentCreated" 
+    }
+});
+```
+
+#### **Example: Creating a Beer Consignment**
+
+```move
+// Smart contract call
+create_consignment(
+    b"24CZ1234567890123456A",  // ARC
+    0x7db0...,                  // Consignee (Tesco Ireland)
+    b"Beer",                    // Goods type
+    5000,                       // 5000 liters
+    b"Liters",                  // Unit
+    b"Plzeň, Czech Republic",   // Origin
+    b"Dublin, Ireland",         // Destination
+    b"Road,Rail,Sea",           // Transport modes
+    b"Pilsner Urquell",         // Beer name
+    44,                         // 4.4% ABV (× 10)
+    clock,
+    ctx
+)
+```
+
+**What happens on-chain**:
+1. ✅ Creates unique `Consignment` NFT object
+2. ✅ Calculates excise duty: €4,961.00 (stored as 496100 cents)
+3. ✅ Shares object between consignor & consignee
+4. ✅ Emits `ConsignmentCreated` event
+5. ✅ Returns object ID for tracking
+
+**Result**:
+- Object ID: `0xdef456...` (unique blockchain identifier)
+- ARC: `24CZ1234567890123456A` (human-readable reference)
+- Status: Draft (0)
+- Excise Duty: €4,961.00 (automatically calculated)
+- Accessible by both Pilsner Urquell and Tesco Ireland wallets
+
+---
+
+### Smart Contracts Comparison
+
+| Feature | consignment.move | operator_registry.move | consignment_enhanced.move |
+|---------|-----------------|----------------------|--------------------------|
+| **Beer Excise Duty** | ✅ Yes | ❌ No | ❌ No |
+| **Multi-Transport** | ✅ Yes | ❌ No | ❌ No |
+| **Cancellation** | ❌ No | ❌ No | ✅ Yes |
+| **Notarization Records** | Basic | ❌ No | ✅ Immutable NFTs |
+| **Operator Registry** | ❌ No | ✅ Yes | ❌ No |
+| **Metadata** | Limited | ❌ No | ✅ Extensible |
+| **Status States** | 3 | N/A | 4 |
+| **Production Ready** | ✅ Yes | ✅ Yes | ✅ Yes |
+| **Current Integration** | ✅ Active | ⚠️ Optional | ⚠️ Alternative |
+
+**Recommended for Demo**: `consignment.move` (includes all beer excise duty features)
+
 ## 📋 Prerequisites
 
 - **Node.js** 20.x or higher
@@ -358,19 +630,35 @@ For detailed API documentation, see [Backend API Documentation](backend/CONFIGUR
 
 ### Consignment NFT Structure
 
-- Unique identifier (ARC)
-- Consignor and consignee addresses
-- Goods type, quantity, and unit
-- Origin and destination locations
-- Status (Draft, In Transit, Received)
-- Document hash (SHA256)
-- Timestamps for all state transitions
+Each consignment is represented as a unique NFT object on IOTA blockchain with:
+
+- **Unique identifier (ARC)** - EU Administrative Reference Code
+- **Consignor and consignee addresses** - Blockchain wallet addresses
+- **Goods type, quantity, and unit** - Wine, Beer (5000 Liters), etc.
+- **Origin and destination locations** - Geographic tracking
+- **Transport modes** - Road, Rail, Sea (multi-select)
+- **Beer-specific fields** - Beer name, ABV %, excise duty
+- **Status** - Draft, In Transit, Received (state machine)
+- **Document hash (SHA256)** - Cryptographic document proof
+- **Timestamps** - Created, dispatched, received (milliseconds)
+
+**Object Storage Model**:
+- Each consignment = 1 independent on-chain NFT object
+- NOT stored in central array/mapping
+- Shared between consignor & consignee
+- Queried by object ID, owner address, or events
+- Permanently stored on blockchain
 
 ### Movement Events
 
-- Created event with consignor
-- Dispatched event with document hash
-- Received event with consignee signature
+Events emitted for complete audit trail:
+
+- **Created event** - Consignment created with consignor details
+- **Dispatched event** - Document hash anchored, status change
+- **Received event** - Consignee signature, completion
+- **Movement event** - Generic backward-compatible event
+
+All events are indexed and queryable on IOTA Explorer.
 
 ## Security
 

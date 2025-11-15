@@ -5,6 +5,8 @@ import CreateConsignment from './pages/CreateConsignment';
 import AllConsignments from './pages/AllConsignments';
 import ConsignmentDetail from './pages/ConsignmentDetail';
 import Login from './pages/Login';
+import CustomsLogin from './pages/CustomsLogin';
+import CustomsDashboard from './pages/CustomsDashboard';
 import NotificationProvider from './components/NotificationProvider';
 import ErrorBoundary from './components/ErrorBoundary';
 import { useWalletStore } from './stores/useWalletStore';
@@ -26,8 +28,12 @@ function App() {
       <BrowserRouter>
         <NotificationProvider />
         <Routes>
-          {/* Login Route */}
+          {/* Login Routes */}
           <Route path="/login" element={<Login />} />
+          <Route path="/customs-login" element={<CustomsLogin />} />
+          
+          {/* Customs Dashboard Route (Standalone, no Layout) */}
+          <Route path="/customs-dashboard" element={<CustomsDashboard />} />
 
           {/* Protected Routes */}
           <Route

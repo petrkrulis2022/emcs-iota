@@ -14,10 +14,14 @@ export interface Consignment {
   dispatchedAt?: string;
   receivedAt?: string;
   transactionId?: string;
-  // Transport details
-  transportMode?: 'truck' | 'container';
+  // Transport details - multiple modes supported (Road, Rail, Sea)
+  transportModes?: string[];
   vehicleLicensePlate?: string;
   containerNumber?: string;
+  // Beer-specific fields
+  beerName?: string;
+  alcoholPercentage?: number; // ABV (e.g., 4.4, 4.5, 2.5)
+  exciseDutyAmount?: number; // Calculated Irish excise duty in euros
   // SEED operator info
   consignorInfo?: {
     seedNumber: string;
@@ -64,9 +68,12 @@ export interface CreateConsignmentRequest {
   unit: string;
   origin: string;
   destination: string;
-  transportMode?: 'truck' | 'container';
+  transportModes?: string[];
   vehicleLicensePlate?: string;
   containerNumber?: string;
+  beerName?: string;
+  alcoholPercentage?: number;
+  exciseDutyAmount?: number;
   beerPackaging?: BeerPackagingData;
 }
 

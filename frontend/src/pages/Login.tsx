@@ -61,8 +61,30 @@ export default function Login() {
     }, 1000);
   };
 
+  const handleCustomsLogin = () => {
+    navigate('/customs-login');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 flex items-center justify-center p-4">
+      {/* Customs Login Button - Top Right */}
+      <div className="absolute top-6 right-6">
+        <button
+          onClick={handleCustomsLogin}
+          className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-semibold shadow-lg transition-colors flex items-center space-x-2"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+            />
+          </svg>
+          <span>Customs Authority Login</span>
+        </button>
+      </div>
+
       <div className="max-w-md w-full">
         {/* Logo and Title */}
         <div className="text-center mb-8">
@@ -152,16 +174,10 @@ export default function Login() {
 
           {/* Demo Credentials */}
           <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-sm font-semibold text-blue-900 mb-2">Demo Credentials (Dublin Old Brewery):</p>
+            <p className="text-sm font-semibold text-blue-900 mb-2">Demo Login:</p>
             <div className="space-y-1 text-xs text-blue-800">
-              <p className="font-mono break-all">
-                <strong>Wallet:</strong> 0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
-              </p>
               <p>
-                <strong>Password:</strong> demo123 (any password works)
-              </p>
-              <p className="mt-2 text-blue-700">
-                <strong>Company:</strong> Dublin Old Brewery, Ireland 🇮🇪
+                <strong>Password:</strong> Any password works
               </p>
             </div>
           </div>

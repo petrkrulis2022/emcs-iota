@@ -22,10 +22,12 @@ export interface CreateConsignmentRequest {
   unit: string;
   origin: string;
   destination: string;
-  transportMode?: string;
+  transportModes?: string[];
   vehicleLicensePlate?: string;
   containerNumber?: string;
   beerPackaging?: BeerPackagingData;
+  beerName?: string;
+  alcoholPercentage?: number;
 }
 
 export interface CreateConsignmentResponse {

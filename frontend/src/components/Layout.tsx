@@ -63,7 +63,7 @@ export default function Layout() {
                   Dashboard
                 </Link>
                 <Link to="/all-consignments" className={getLinkClass('/all-consignments')}>
-                  All Consignments
+                  My Consignments
                 </Link>
                 <Link to="/create" className={getLinkClass('/create')}>
                   Create Consignment
@@ -137,7 +137,7 @@ export default function Layout() {
                 className={getLinkClass('/all-consignments')}
                 onClick={() => setMobileMenuOpen(false)}
               >
-                All Consignments
+                My Consignments
               </Link>
               <Link
                 to="/create"
