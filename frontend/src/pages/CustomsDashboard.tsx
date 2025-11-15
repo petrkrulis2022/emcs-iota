@@ -4,6 +4,7 @@ import type { Consignment } from '../stores/useConsignmentStore';
 import { apiClient } from '../services/apiClient';
 import SkeletonLoader from '../components/SkeletonLoader';
 import ConsignmentPrintPDF from '../components/ConsignmentPrintPDF';
+import IOTAExplorerModal from '../components/IOTAExplorerModal';
 
 type DirectionFilter = 'all' | 'exports' | 'imports';
 type StatusFilter = 'all' | 'active' | 'in-transit' | 'closed';
@@ -19,6 +20,8 @@ export default function CustomsDashboard() {
   const [dateTo, setDateTo] = useState('');
   const [selectedConsignment, setSelectedConsignment] = useState<Consignment | null>(null);
   const [showPrintModal, setShowPrintModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showIOTAExplorer, setShowIOTAExplorer] = useState(false);
 
   const customsWallet = localStorage.getItem('customsWallet');
   const isCustomsAuthority = localStorage.getItem('isCustomsAuthority') === 'true';
@@ -53,9 +56,9 @@ export default function CustomsDashboard() {
     navigate('/customs-login');
   };
 
-  const handleViewPDF = (consignment: Consignment) => {
+  const handleViewDetails = (consignment: Consignment) => {
     setSelectedConsignment(consignment);
-    setShowPrintModal(true);
+    setShowDetailsModal(true);
   };
 
   const handlePrint = () => {
@@ -367,7 +370,7 @@ export default function CustomsDashboard() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         <button
-                          onClick={() => handleViewPDF(consignment)}
+                          onClick={() => handleViewDetails(consignment)}
                           className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors flex items-center space-x-2"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -442,6 +445,123 @@ export default function CustomsDashboard() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Details Modal with Blockchain Verification */}
+      {showDetailsModal && selectedConsignment && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="fixed inset-0 bg-black bg-opacity-60" onClick={() => setShowDetailsModal(false)}></div>
+          
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="relative bg-white rounded-xl shadow-2xl max-w-4xl w-full p-6 max-h-[90vh] overflow-y-auto">
+              {/* Modal Header */}
+              <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
+                <h3 className="text-2xl font-bold text-gray-900">Consignment Details</h3>
+                <button
+                  onClick={() => setShowDetailsModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Consignment Info */}
+              <div className="space-y-4 mb-6">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h4 className="font-semibold text-blue-900 mb-2">ARC: {selectedConsignment.arc}</h4>
+                  <p className="text-sm text-blue-800">
+                    Status: <span className="font-medium">{selectedConsignment.status}</span>
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-600 font-semibold">Goods Type</p>
+                    <p className="text-gray-900">{selectedConsignment.goodsType}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 font-semibold">Quantity</p>
+                    <p className="text-gray-900">{selectedConsignment.quantity} {selectedConsignment.unit}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 font-semibold">Origin</p>
+                    <p className="text-gray-900">{selectedConsignment.origin}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 font-semibold">Destination</p>
+                    <p className="text-gray-900">{selectedConsignment.destination}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Blockchain Verification Section */}
+              <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-2 border-purple-200 rounded-lg p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-lg font-bold text-gray-900">Blockchain Verification</h4>
+                  <button
+                    onClick={() => setShowIOTAExplorer(true)}
+                    className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg font-medium"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    <span>Verify on IOTA</span>
+                  </button>
+                </div>
+                {selectedConsignment.documentHash ? (
+                  <div>
+                    <p className="text-sm font-semibold text-gray-700 mb-2">e-AD Document Hash</p>
+                    <p className="text-xs font-mono text-gray-700 break-all bg-white p-3 rounded border border-purple-200">
+                      {selectedConsignment.documentHash}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-sm text-purple-800">
+                    This consignment is stored on the IOTA blockchain as an NFT. Click "Verify on IOTA" to view the blockchain metadata and verify the consignment data.
+                  </p>
+                )}
+              </div>
+
+              {/* Print Button */}
+              <div className="mt-6 pt-4 border-t border-gray-200">
+                <button
+                  onClick={() => {
+                    setShowDetailsModal(false);
+                    setShowPrintModal(true);
+                  }}
+                  className="w-full bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 transition-colors flex items-center justify-center space-x-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+                    />
+                  </svg>
+                  <span>Print Consignment PDF</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* IOTA Explorer Modal */}
+      {showIOTAExplorer && selectedConsignment && (
+        <IOTAExplorerModal consignment={selectedConsignment} onClose={() => setShowIOTAExplorer(false)} />
       )}
     </>
   );

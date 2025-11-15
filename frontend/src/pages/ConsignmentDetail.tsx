@@ -465,27 +465,38 @@ export default function ConsignmentDetail() {
             </div>
           )}
         </div>
-        {consignment.documentHash && (
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-semibold text-gray-700">Blockchain Verification (e-AD Document Hash)</p>
-              <button
-                onClick={() => setShowIOTAExplorer(true)}
-                className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg text-sm font-medium"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <span>Verify on IOTA</span>
-              </button>
-            </div>
+      </div>
+
+      {/* Blockchain Verification Section */}
+      <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 print:hidden">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Blockchain Verification</h2>
+          <button
+            onClick={() => setShowIOTAExplorer(true)}
+            className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg font-medium"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <span>Verify on IOTA</span>
+          </button>
+        </div>
+        {consignment.documentHash ? (
+          <div>
+            <p className="text-sm font-semibold text-gray-700 mb-2">e-AD Document Hash</p>
             <p className="text-xs font-mono text-gray-700 break-all bg-gray-50 p-3 rounded border border-gray-200">
               {consignment.documentHash}
+            </p>
+          </div>
+        ) : (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p className="text-sm text-blue-800">
+              This consignment is stored on the IOTA blockchain as an NFT. Click "Verify on IOTA" to view the blockchain metadata and verify the consignment data.
             </p>
           </div>
         )}
