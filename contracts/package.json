@@ -10,7 +10,10 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@iota/iota-sdk": "^1.7.1",
+    "@mysten/sui": "^1.11.0",
     "@mysten/sui.js": "^0.38.0",
+    "bech32": "^2.0.0",
     "node-fetch": "^2.7.0"
   }
 }

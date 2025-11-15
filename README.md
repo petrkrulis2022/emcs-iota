@@ -18,7 +18,11 @@ The EMCS Blockchain Demo digitizes the EU's Electronic Movement and Control Syst
 
 - **Frontend**: [Add your deployed frontend URL]
 - **Backend API**: [Add your deployed backend URL]
-- **Smart Contracts**: [Add your package ID on Sui Explorer]
+- **Smart Contracts**: Deployed on IOTA Testnet
+  - **Package ID**: `0x942fd017cb9ac11bb9d4efa537cae3cd47b7fcf2254a3f135455310fc52f4de6`
+  - **Operator Registry**: `0xd0e6ce2e96b968720b8591de18a11a1c23c7bf35b31b9f47c9d644ff7404caff`
+  - **Transaction**: [View on Explorer](https://explorer.iota.cafe/txblock/3BEWkH5GTNP5WeidbanBQxy5DYs7go4H2TvgXNnUcuzf?network=testnet)
+  - **Network**: IOTA Testnet
 
 ## ✨ Key Features
 
@@ -100,7 +104,24 @@ This is a monorepo containing three main components:
 - **Sui Framework** - Move framework
 - **NFT-based** - Consignment representation
 
-## 📦 Smart Contracts Architecture
+## 📦 Smart Contracts - Deployed on IOTA Testnet
+
+**Network**: IOTA Testnet  
+**Package ID**: `0x942fd017cb9ac11bb9d4efa537cae3cd47b7fcf2254a3f135455310fc52f4de6`  
+**Deployment Transaction**: [3BEWkH5GTNP5WeidbanBQxy5DYs7go4H2TvgXNnUcuzf](https://explorer.iota.cafe/txblock/3BEWkH5GTNP5WeidbanBQxy5DYs7go4H2TvgXNnUcuzf?network=testnet)  
+**Deployed**: November 15, 2025
+
+### Deployed Contracts
+
+| Contract | Description | Address |
+|----------|-------------|---------|
+| **consignment.move** | Main consignment tracking with beer excise duty | `0x942fd017cb9ac11bb9d4efa537cae3cd47b7fcf2254a3f135455310fc52f4de6::consignment` |
+| **consignment_enhanced.move** | Enhanced version with cancellation & immutable notarization | `0x942fd017cb9ac11bb9d4efa537cae3cd47b7fcf2254a3f135455310fc52f4de6::consignment_enhanced` |
+| **operator_registry.move** | SEED operator authorization registry | `0x942fd017cb9ac11bb9d4efa537cae3cd47b7fcf2254a3f135455310fc52f4de6::operator_registry` |
+
+**Registry Object ID**: `0xd0e6ce2e96b968720b8591de18a11a1c23c7bf35b31b9f47c9d644ff7404caff`
+
+### Contract Features Summary
 
 The project uses IOTA's Move language to implement excise goods tracking with NFT-based consignments.
 
