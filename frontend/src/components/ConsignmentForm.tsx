@@ -77,7 +77,7 @@ export default function ConsignmentForm({
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    
+
     // Auto-add 0x prefix to consignee address if missing
     let processedValue = value;
     if (name === 'consignee' && value && !value.startsWith('0x') && value.length > 0) {
@@ -86,7 +86,7 @@ export default function ConsignmentForm({
         processedValue = '0x' + value;
       }
     }
-    
+
     setFormData(prev => ({ ...prev, [name]: processedValue }));
 
     // If goods type changes to Beer, set unit to Liters
@@ -104,7 +104,7 @@ export default function ConsignmentForm({
     setFormData(prev => {
       const currentModes = prev.transportModes || [];
       const isSelected = currentModes.includes(mode);
-      
+
       return {
         ...prev,
         transportModes: isSelected
@@ -151,21 +151,21 @@ export default function ConsignmentForm({
   const calculateExciseDuty = (): number | null => {
     if (formData.goodsType !== 'Beer') return null;
     if (!formData.quantity || !formData.alcoholPercentage) return null;
-    
+
     const quantity = parseFloat(formData.quantity);
     const abv = parseFloat(formData.alcoholPercentage);
-    
+
     if (quantity <= 0 || abv <= 0) return null;
-    
+
     // Convert liters to hectolitres
     const hectolitres = quantity / 100;
-    
+
     // Determine rate based on ABV threshold (2.8%)
     const ratePerHl = abv <= 2.8 ? 11.27 : 22.55;
-    
+
     // Calculate duty: Rate × hectolitres × ABV
     const duty = ratePerHl * hectolitres * abv;
-    
+
     return duty;
   };
 
@@ -315,19 +315,19 @@ export default function ConsignmentForm({
 
     // Additional validation for beer consignments
     if (formData.goodsType === 'Beer') {
-      const beerValid = baseValid && 
-        formData.beerName && 
-        formData.alcoholPercentage && 
+      const beerValid = baseValid &&
+        formData.beerName &&
+        formData.alcoholPercentage &&
         parseFloat(formData.alcoholPercentage) > 0 &&
         parseFloat(formData.alcoholPercentage) <= 100;
-      
+
       console.log('Beer Validation:', {
         beerValid,
         hasBeerName: !!formData.beerName,
         hasAlcohol: !!formData.alcoholPercentage,
-        alcoholValue: parseFloat(formData.alcoholPercentage),
+        alcoholValue: parseFloat(formData.alcoholPercentage || '0'),
       });
-      
+
       return beerValid;
     }
 
@@ -419,7 +419,7 @@ export default function ConsignmentForm({
       {formData.goodsType === 'Beer' && (
         <>
           <BeerPackagingCalculator onChange={handleBeerPackagingChange} />
-          
+
           {/* Beer Name */}
           <div>
             <label htmlFor="beerName" className="block text-sm font-medium text-gray-700 mb-1">
