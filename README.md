@@ -16,8 +16,8 @@ The EMCS Blockchain Demo digitizes the EU's Electronic Movement and Control Syst
 
 ## 🚀 Live Demo
 
-- **Frontend**: [Add your deployed frontend URL]
-- **Backend API**: [Add your deployed backend URL]
+- **Frontend**: [https://691a197355dea100089c0d03--emcs-on-ota-smart-contracts.netlify.app](https://691a197355dea100089c0d03--emcs-on-ota-smart-contracts.netlify.app) (Netlify)
+- **Backend API**: [https://emcs-iota-production.up.railway.app](https://emcs-iota-production.up.railway.app) (Railway)
 - **Smart Contracts**: Deployed on IOTA Testnet
   - **Package ID**: `0x942fd017cb9ac11bb9d4efa537cae3cd47b7fcf2254a3f135455310fc52f4de6`
   - **Operator Registry**: `0xd0e6ce2e96b968720b8591de18a11a1c23c7bf35b31b9f47c9d644ff7404caff`
@@ -25,17 +25,15 @@ The EMCS Blockchain Demo digitizes the EU's Electronic Movement and Control Syst
   - **Network**: IOTA Testnet
   - 📖 **[Smart Contracts Integration Guide](SMART_CONTRACTS_INTEGRATION_GUIDE.md)** - Complete guide on how contracts are used in the app
 
+### 🎥 Demo Resources
+- **Landing Page**: Interactive landing page with comprehensive EMCS and IOTA information
+- **Video Screenplay**: Complete 3-4 minute demo script available in [VIDEO_SCREENPLAY.md](VIDEO_SCREENPLAY.md)
+- **Demo Script**: Step-by-step demo instructions in [DEMO_SCRIPT.md](DEMO_SCRIPT.md)
+
 ## ✨ Key Features
 
-## Architecture
-
-This is a monorepo containing three main components:
-
-- **frontend/** - React + Vite + TypeScript web application
-- **backend/** - Node.js + Express API server
-- **contracts/** - IOTA Move smart contracts
-
 - 🔐 **Blockchain Authentication** - Wallet-based secure authentication
+- 🆔 **Decentralized Identity** - IOTA Identity integration for operator verification
 - 📦 **Consignment Management** - Create and track excise goods shipments as NFTs
 - 🔄 **Status Tracking** - Real-time updates (Draft → In Transit → Received)
 - 📱 **QR Code Generation** - Scannable codes for quick access
@@ -45,28 +43,36 @@ This is a monorepo containing three main components:
 - 🌍 **Multi-Party Workflow** - Consignor and consignee authorization
 - ⚡ **Feeless Transactions** - IOTA's unique architecture eliminates gas fees
 - 🔍 **Transparent Verification** - Anyone can verify movements on blockchain
+- 🏠 **Landing Page** - Comprehensive information page with "Launch App" button
+- 🎬 **Demo Ready** - Complete video screenplay and demo script included
 
 ## 📊 Architecture
 
+This is a monorepo containing three main components:
+
+- **frontend/** - React + Vite + TypeScript web application (deployed on Netlify)
+- **backend/** - Node.js + Express API server (deployed on Railway)
+- **contracts/** - IOTA Move smart contracts (deployed on IOTA Testnet)
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     Frontend (React + Vite)                  │
+│               Frontend (React + Vite) - Netlify              │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
-│  │  Dashboard   │  │ Consignment  │  │   Tracking   │      │
-│  │   Component  │  │     Form     │  │   Component  │      │
+│  │Landing Page  │  │  Dashboard   │  │ Consignment  │      │
+│  │  Component   │  │   Component  │  │     Form     │      │
 │  └──────────────┘  └──────────────┘  └──────────────┘      │
 └────────────────────────────┬──────────────────────────────────┘
                              │ HTTPS/REST
 ┌────────────────────────────▼──────────────────────────────────┐
-│                Backend API (Node.js + Express)                │
+│            Backend API (Node.js + Express) - Railway          │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐       │
-│  │ Consignment  │  │  Notarization│  │     ARC      │       │
+│  │ Consignment  │  │  Identity    │  │     ARC      │       │
 │  │   Routes     │  │   Service    │  │  Generator   │       │
 │  └──────────────┘  └──────────────┘  └──────────────┘       │
 └────────────────────────────┬───────────────────────────────────┘
                              │ IOTA SDK
 ┌────────────────────────────▼───────────────────────────────────┐
-│                    IOTA Blockchain (Testnet)                   │
+│              IOTA Blockchain (Testnet) - Deployed              │
 │  ┌──────────────────────────────────────────────────────┐     │
 │  │              Move Smart Contracts                     │     │
 │  │  ┌──────────────────┐ ┌──────────────────┐          │     │
@@ -84,6 +90,7 @@ This is a monorepo containing three main components:
 - **TypeScript** 5.9 - Type safety
 - **Vite** 7.2 - Build tool
 - **IOTA Wallet SDK** - Blockchain authentication
+- **IOTA Identity SDK** (@iota/identity-wasm) - Decentralized identity and credentials
 - **TailwindCSS** 4.x - Styling
 - **React Router** 6.x - Navigation
 - **Zustand** - State management
@@ -95,6 +102,7 @@ This is a monorepo containing three main components:
 - **Express** 4.x - Web framework
 - **TypeScript** 5.9 - Type safety
 - **IOTA SDK** (@iota/sdk) - Blockchain integration
+- **IOTA Identity SDK** (@iota/identity-wasm) - DID and verifiable credentials
 - **Crypto** (built-in) - SHA256 hashing
 - **CORS** - Cross-origin support
 - **dotenv** - Environment configuration
@@ -728,10 +736,11 @@ sui client publish --gas-budget 100000000
 
 ### Backend API
 
+**Deployed on Railway**: https://emcs-iota-production.up.railway.app
+
 See [Backend Deployment Guide](backend/DEPLOYMENT_GUIDE.md)
 
-**Recommended Platform**: Railway
-
+**Railway Deployment**:
 ```bash
 cd backend
 railway init
@@ -739,24 +748,33 @@ railway up
 railway variables set IOTA_RPC_URL=https://fullnode.testnet.sui.io:443
 railway variables set CONTRACT_PACKAGE_ID=YOUR_PACKAGE_ID
 railway variables set OPERATOR_REGISTRY_ID=YOUR_REGISTRY_ID
+railway domain  # Get your Railway domain
 ```
 
 **Alternative Platforms**: Render, Heroku
 
 ### Frontend
 
+**Deployed on Netlify**: https://691a197355dea100089c0d03--emcs-on-ota-smart-contracts.netlify.app
+
 See [Frontend Deployment Guide](frontend/DEPLOYMENT_GUIDE.md)
 
-**Recommended Platform**: Vercel
-
+**Netlify Deployment**:
 ```bash
 cd frontend
-vercel
-vercel env add VITE_API_URL
-vercel env add VITE_IOTA_NETWORK
+# Configure in netlify.toml or Netlify dashboard
+# Environment variables:
+# - VITE_API_URL=https://emcs-iota-production.up.railway.app
+# - VITE_IOTA_NETWORK=testnet
 ```
 
-**Alternative Platform**: Netlify
+**Alternative Platform**: Vercel
+
+**Features**:
+- Landing page with comprehensive EMCS and IOTA information
+- "Launch App" button navigates to login/dashboard
+- Fully responsive design with TailwindCSS
+- Integrated with Railway backend via environment variables
 
 ## 🧪 Testing
 
@@ -892,67 +910,31 @@ This is a hackathon project built for Moveathon Europe. Contributions, issues, a
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+---
 
-- **Moveathon Europe** - Hackathon organizers
-- **IOTA Foundation** - Blockchain platform and support
-- **Sui/Move** - Smart contract framework
-- **EU EMCS** - Inspiration for the system design
+## 🎯 Latest Updates (November 2025)
 
-## 📞 Contact & Support
+### ✅ Production Deployment Complete
+- **Frontend**: Deployed on Netlify with custom landing page
+- **Backend**: Deployed on Railway with CORS configuration for Netlify
+- **Smart Contracts**: Live on IOTA Testnet
 
-- **GitHub Issues**: [Report bugs or request features]
-- **Documentation**: See `/docs` folder for detailed guides
-- **Demo**: [Add deployed app URL]
+### 🆕 Recent Features
+- **Landing Page**: Comprehensive single-page with EMCS/IOTA information, features comparison, and "Launch App" CTA
+- **Video Screenplay**: Complete 3-4 minute demo script with scene-by-scene breakdown (see VIDEO_SCREENPLAY.md)
+- **IOTA Identity Integration**: Added @iota/identity-wasm SDK for decentralized identity support
+- **CORS Updates**: Backend configured to allow Netlify domain for cross-origin requests
+- **Route Restructuring**: Landing page on `/`, dashboard on `/dashboard/*` for better UX
 
-## 🎯 Roadmap
+### 📊 Deployment Architecture
+```
+Netlify (Frontend) ──HTTPS──> Railway (Backend) ──IOTA SDK──> IOTA Testnet (Smart Contracts)
+```
 
-### Phase 1: MVP (Completed)
-- [x] Smart contract development
-- [x] Backend API implementation
-- [x] Frontend user interface
-- [x] Wallet integration
-- [x] Basic consignment workflow
-- [x] Deployment to testnet
-
-### Phase 2: Enhancements (Future)
-- [ ] IOTA Identity integration for operator verification
-- [ ] Anomaly reporting (shortages, damages)
-- [ ] Multi-signature approvals for high-value shipments
-- [ ] Advanced filtering and search
-- [ ] Export audit reports (PDF)
-- [ ] Mobile app (React Native)
-
-### Phase 3: Production (Future)
-- [ ] IoT sensor integration (temperature, location)
-- [ ] Automated customs notifications
-- [ ] Analytics dashboard for authorities
-- [ ] Integration with existing EMCS via API gateway
-- [ ] Mainnet deployment
-- [ ] Scalability optimizations
-
-## 📊 Project Stats
-
-- **Smart Contracts**: 2 Move modules
-- **API Endpoints**: 7 REST endpoints
-- **Frontend Components**: 15+ React components
-- **Test Coverage**: [Add coverage percentage]
-- **Lines of Code**: [Add LOC count]
-
-## 🔗 Links
-
-- **Live Demo**: [Add deployed frontend URL]
-- **API Documentation**: [Add API docs URL]
-- **Smart Contracts**: [Add Sui Explorer package URL]
-- **GitHub Repository**: [Add GitHub URL]
-- **Moveathon Europe**: [Add hackathon URL]
-
-## 📖 Additional Resources
-
-- [IOTA Documentation](https://docs.sui.io)
-- [Move Language Guide](https://move-language.github.io/move/)
-- [EU EMCS Information](https://ec.europa.eu/taxation_customs/business/excise-duties-alcohol-tobacco-energy/excise-movement-control-system_en)
-- [Blockchain for Supply Chain](https://www.ibm.com/blockchain/supply-chain)
+### 🔗 Quick Links
+- **Live App**: https://691a197355dea100089c0d03--emcs-on-ota-smart-contracts.netlify.app
+- **API Health**: https://emcs-iota-production.up.railway.app/health
+- **Explorer**: https://explorer.iota.cafe/txblock/3BEWkH5GTNP5WeidbanBQxy5DYs7go4H2TvgXNnUcuzf?network=testnet
 
 ---
 
