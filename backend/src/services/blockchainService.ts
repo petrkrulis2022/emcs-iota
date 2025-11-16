@@ -141,9 +141,10 @@ export class BlockchainService {
       });
 
       // Extract consignment object ID from created objects
-      const consignmentId = result.objectChanges?.find(
-        (change: any) => change.type === 'created' && change.objectType && change.objectType.includes('Consignment')
-      )?.objectId || '';
+      const createdChange = result.objectChanges?.find(
+        (change: any) => change.type === 'created' && change.objectType && change.objectType.includes('Consignment') && 'objectId' in change
+      ) as any;
+      const consignmentId = createdChange?.objectId || '';
 
       return {
         digest: result.digest,
@@ -200,9 +201,10 @@ export class BlockchainService {
       });
 
       // Extract notarization record ID
-      const notarizationId = result.objectChanges?.find(
-        (change: any) => change.type === 'created' && change.objectType && change.objectType.includes('NotarizationRecord')
-      )?.objectId || '';
+      const notarizationChange = result.objectChanges?.find(
+        (change: any) => change.type === 'created' && change.objectType && change.objectType.includes('NotarizationRecord') && 'objectId' in change
+      ) as any;
+      const notarizationId = notarizationChange?.objectId || '';
 
       return {
         digest: result.digest,

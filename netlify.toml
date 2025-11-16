@@ -2,6 +2,9 @@
   command = "npm run build:frontend"
   publish = "frontend/dist"
 
+[build.environment]
+  VITE_API_URL = "https://emcs-iota-production.up.railway.app"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
