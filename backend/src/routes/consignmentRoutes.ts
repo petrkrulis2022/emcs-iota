@@ -751,6 +751,64 @@ router.get('/:arc/events', async (req: Request, res: Response, next: NextFunctio
 });
 
 /**
+ * POST /api/consignments/:arc/verify-prepare
+ * Prepare verification data for officer to sign with wallet
+ * Returns consignment data to be verified against blockchain NFT
+ */
+router.post('/:arc/verify-prepare', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { arc } = req.params;
+    const { officerAddress } = req.body;
+
+    // Validate ARC format
+    if (!arcGenerator.validateARC(arc)) {
+      throw new AppError('Invalid ARC format', 400);
+    }
+
+    if (!officerAddress || !officerAddress.startsWith('0x')) {
+      throw new AppError('Invalid officer wallet address', 400);
+    }
+
+    console.log(`🔍 Preparing verification for officer: ${officerAddress}`);
+
+    // Get consignment from persistent store
+    const consignment = consignmentStore.getConsignment(arc);
+
+    if (!consignment) {
+      throw new AppError('Consignment not found', 404);
+    }
+
+    // Check if consignment has blockchain transaction
+    if (!consignment.transactionId || consignment.transactionId.startsWith('tx_mock')) {
+      throw new AppError('Consignment not on blockchain - cannot verify', 400);
+    }
+
+    // Return data needed for verification
+    const verificationData = {
+      arc: consignment.arc,
+      consignor: consignment.consignor,
+      consignee: consignment.consignee,
+      goodsType: consignment.goodsType,
+      quantity: consignment.quantity,
+      unit: consignment.unit,
+      origin: consignment.origin,
+      destination: consignment.destination,
+      transactionId: consignment.transactionId,
+      createdAt: consignment.createdAt,
+      status: consignment.status,
+    };
+
+    res.json({
+      success: true,
+      data: verificationData,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
  * GET /api/consignments/:arc/verify
  * Verify consignment data against blockchain (Customs Officer Verification)
  * Compares database/in-memory data with on-chain NFT metadata

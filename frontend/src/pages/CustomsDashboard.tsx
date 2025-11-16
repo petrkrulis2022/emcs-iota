@@ -539,6 +539,60 @@ export default function CustomsDashboard() {
                 )}
               </div>
 
+              {/* Revenue Officer Verification Section */}
+              <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-lg p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="bg-blue-100 p-2 rounded-full">
+                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="text-lg font-bold text-gray-900">Officer Verification</h4>
+                    <p className="text-xs text-gray-600">Verify with wallet transaction & view NFT</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      window.open(`/officer-verification?arc=${selectedConsignment.arc}`, '_blank');
+                    }}
+                    className="flex items-center justify-center space-x-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:from-blue-700 hover:to-cyan-700 transition-all shadow-md hover:shadow-lg font-medium text-sm"
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <span>Verify as Officer</span>
+                  </button>
+                </div>
+                <div className="bg-white rounded-lg p-4 border border-blue-200">
+                  <p className="text-sm text-blue-800 mb-3">
+                    <span className="font-semibold">Revenue Officer verification</span> requires connecting a wallet and signing a transaction. This creates an immutable on-chain audit trail and compares PDF/database data against the blockchain NFT.
+                  </p>
+                  {selectedConsignment.transactionId && !selectedConsignment.transactionId.startsWith('tx_mock') ? (
+                    <div className="space-y-2">
+                      <div>
+                        <p className="text-xs font-semibold text-gray-600 mb-1">Blockchain Transaction ID</p>
+                        <p className="text-xs font-mono text-gray-700 break-all bg-gray-50 p-2 rounded border border-gray-200">
+                          {selectedConsignment.transactionId}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-green-700 bg-green-50 px-3 py-2 rounded">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        <span className="font-medium">NFT created on IOTA blockchain - ready to verify</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-xs text-amber-700 bg-amber-50 px-3 py-2 rounded">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      <span>Mock consignment - cannot perform blockchain verification</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               {/* Print Button */}
               <div className="mt-6 pt-4 border-t border-gray-200">
                 <button

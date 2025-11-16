@@ -7,6 +7,7 @@ import ConsignmentDetail from './pages/ConsignmentDetail';
 import Login from './pages/Login';
 import CustomsLogin from './pages/CustomsLogin';
 import CustomsDashboard from './pages/CustomsDashboard';
+import OfficerVerification from './pages/OfficerVerification';
 import NotificationProvider from './components/NotificationProvider';
 import ErrorBoundary from './components/ErrorBoundary';
 import { useWalletStore } from './stores/useWalletStore';
@@ -34,6 +35,9 @@ function App() {
           
           {/* Customs Dashboard Route (Standalone, no Layout) */}
           <Route path="/customs-dashboard" element={<CustomsDashboard />} />
+          
+          {/* Officer Verification Route (Standalone, no Layout) */}
+          <Route path="/officer-verification" element={<OfficerVerification />} />
 
           {/* Protected Routes */}
           <Route
