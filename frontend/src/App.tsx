@@ -8,6 +8,7 @@ import Login from './pages/Login';
 import CustomsLogin from './pages/CustomsLogin';
 import CustomsDashboard from './pages/CustomsDashboard';
 import OfficerVerification from './pages/OfficerVerification';
+import LandingPage from './pages/LandingPage';
 import NotificationProvider from './components/NotificationProvider';
 import ErrorBoundary from './components/ErrorBoundary';
 import { useWalletStore } from './stores/useWalletStore';
@@ -29,6 +30,9 @@ function App() {
       <BrowserRouter>
         <NotificationProvider />
         <Routes>
+          {/* Landing Page */}
+          <Route path="/" element={<LandingPage />} />
+          
           {/* Login Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/customs-login" element={<CustomsLogin />} />
@@ -41,7 +45,7 @@ function App() {
 
           {/* Protected Routes */}
           <Route
-            path="/"
+            path="/dashboard"
             element={
               <ProtectedRoute>
                 <Layout />

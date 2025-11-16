@@ -57,7 +57,7 @@ export default function Login() {
       showSuccessNotification('Login successful!');
       
       // Navigate to dashboard
-      navigate('/');
+      navigate('/dashboard');
       
       setIsLoading(false);
     }, 1000);
