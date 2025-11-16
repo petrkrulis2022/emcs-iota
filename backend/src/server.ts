@@ -18,9 +18,26 @@ const app: Express = express();
 const PORT = process.env.PORT || 3000;
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
+// CORS configuration - allow both localhost and Netlify
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'https://691a197355dea100089c0d03--emcs-on-ota-smart-contracts.netlify.app',
+  'https://emcs-on-ota-smart-contracts.netlify.app', // Production Netlify URL
+];
+
 // Middleware
 app.use(cors({
-  origin: FRONTEND_URL,
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 }));
 
@@ -85,7 +102,7 @@ app.use((req: Request, res: Response) => {
 app.listen(PORT, () => {
   console.log(`🚀 EMCS Backend API running on port ${PORT}`);
   console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🌐 CORS enabled for: ${FRONTEND_URL}`);
+  console.log(`🌐 CORS enabled for: ${allowedOrigins.join(', ')}`);
   console.log(`🔗 IOTA RPC: ${process.env.IOTA_RPC_URL || 'Not configured'}`);
 });
 
