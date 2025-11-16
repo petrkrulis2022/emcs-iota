@@ -30,14 +30,14 @@ export default function SuccessModal({
       setShowPDFModal(true);
     } else {
       onClose();
-      navigate(`/consignment/${arc}`);
+      navigate(`/dashboard/consignment/${arc}`);
     }
   };
 
   const handlePrintPDF = () => {
     if (!consignment) {
       // If no consignment data, navigate to the detail page where print is available
-      navigate(`/consignment/${arc}`);
+      navigate(`/dashboard/consignment/${arc}`);
     } else {
       // Show PDF in modal
       setShowPDFModal(true);

@@ -145,7 +145,7 @@ export default function Dashboard() {
           <h3 className="text-xl font-bold text-gray-900 mb-2">No consignments yet</h3>
           <p className="text-gray-600 mb-6">Create your first consignment to get started</p>
           <Link
-            to="/create"
+            to="/dashboard/create"
             className="inline-block px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all"
           >
             Create Consignment

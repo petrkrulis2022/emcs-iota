@@ -56,7 +56,7 @@ export default function ConsignmentTable({
     if ((e.target as HTMLElement).closest('button')) {
       return;
     }
-    navigate(`/consignment/${arc}`);
+    navigate(`/dashboard/consignment/${arc}`);
   };
 
   const handleDispatch = async (arc: string, e: React.MouseEvent) => {
@@ -113,7 +113,7 @@ export default function ConsignmentTable({
 
   const handlePrint = (arc: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    navigate(`/consignment/${arc}?print=true`);
+    navigate(`/dashboard/consignment/${arc}?print=true`);
   };
 
   const canDispatch = (consignment: Consignment): boolean => {
