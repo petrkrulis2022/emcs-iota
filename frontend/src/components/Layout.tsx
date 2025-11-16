@@ -38,7 +38,7 @@ export default function Layout() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center space-x-4 sm:space-x-8">
-              <Link to="/" className="flex items-center space-x-2">
+              <Link to="/dashboard" className="flex items-center space-x-2">
                 <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md">
                   <svg
                     className="w-6 h-6 text-blue-600"
@@ -60,13 +60,13 @@ export default function Layout() {
                 </div>
               </Link>
               <div className="hidden md:flex space-x-2">
-                <Link to="/" className={getLinkClass('/')}>
+                <Link to="/dashboard" className={getLinkClass('/dashboard')}>
                   Dashboard
                 </Link>
-                <Link to="/all-consignments" className={getLinkClass('/all-consignments')}>
+                <Link to="/dashboard/all-consignments" className={getLinkClass('/dashboard/all-consignments')}>
                   My Consignments
                 </Link>
-                <Link to="/create" className={getLinkClass('/create')}>
+                <Link to="/dashboard/create" className={getLinkClass('/dashboard/create')}>
                   Create Consignment
                 </Link>
               </div>
@@ -133,19 +133,19 @@ export default function Layout() {
         {mobileMenuOpen && (
           <div className="md:hidden border-t border-white/20 bg-blue-900/50 backdrop-blur-sm">
             <div className="px-2 pt-2 pb-3 space-y-1">
-              <Link to="/" className={getLinkClass('/')} onClick={() => setMobileMenuOpen(false)}>
+              <Link to="/dashboard" className={getLinkClass('/dashboard')} onClick={() => setMobileMenuOpen(false)}>
                 Dashboard
               </Link>
               <Link
-                to="/all-consignments"
-                className={getLinkClass('/all-consignments')}
+                to="/dashboard/all-consignments"
+                className={getLinkClass('/dashboard/all-consignments')}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 My Consignments
               </Link>
               <Link
-                to="/create"
-                className={getLinkClass('/create')}
+                to="/dashboard/create"
+                className={getLinkClass('/dashboard/create')}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Create Consignment
