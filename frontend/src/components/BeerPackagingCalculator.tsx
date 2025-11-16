@@ -48,7 +48,8 @@ export default function BeerPackagingCalculator({ onChange }: BeerPackagingCalcu
       cansPerPackage,
       numberOfPackages,
     });
-  }, [canSize, cansPerPackage, numberOfPackages, onChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canSize, cansPerPackage, numberOfPackages]);
 
   const isValid = canSize > 0 && cansPerPackage > 0 && numberOfPackages > 0;
   const isLargeConsignment = totalLiters > 1000000;

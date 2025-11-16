@@ -5,6 +5,7 @@ import { notarizationService } from '../services/notarizationService.js';
 import { lookupOperator } from '../services/seedRegistry.js';
 import { calculateIrishBeerDuty } from '../services/exciseDutyCalculator.js';
 import { blockchainService } from '../services/blockchainService.js';
+import { persistentStore } from '../services/persistentStore.js';
 import { AppError } from '../middleware/errorHandler.js';
 import {
   CreateConsignmentRequest,
@@ -22,9 +23,12 @@ import {
 
 const router = Router();
 
-// In-memory storage for demo mode (without live blockchain deployment)
-const consignmentStore = new Map<string, Consignment>();
-const eventsStore = new Map<string, MovementEvent[]>();
+// Persistent storage - survives server restarts
+const consignmentStore = persistentStore;
+const eventsStore = {
+  get: (arc: string) => persistentStore.getEvents(arc),
+  set: (arc: string, events: MovementEvent[]) => persistentStore.setEvents(arc, events),
+};
 
 // Initialize mock consignments for demo
 const initializeMockData = () => {
@@ -233,7 +237,7 @@ const initializeMockData = () => {
 
   // Add mock consignments to store
   mockConsignments.forEach(consignment => {
-    consignmentStore.set(consignment.arc, consignment);
+    consignmentStore.setConsignment(consignment.arc, consignment);
     
     // Add corresponding events
     const events: MovementEvent[] = [
@@ -280,7 +284,7 @@ router.get('/all', async (req: Request, res: Response, next: NextFunction) => {
     console.log('📋 Fetching all consignments (no filter)');
 
     // Get all consignments from store
-    const allConsignments = Array.from(consignmentStore.values());
+    const allConsignments = consignmentStore.getAllConsignments();
 
     // Sort by creation date - newest first (so real blockchain consignments appear on top)
     allConsignments.sort((a, b) => {
@@ -428,7 +432,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
         address: `${consigneeInfo.address}, ${consigneeInfo.city} ${consigneeInfo.postalCode}`,
       },
     };
-    consignmentStore.set(arc, consignment);
+    consignmentStore.setConsignment(arc, consignment);
 
     // Store creation event
     const creationEvent: MovementEvent = {
@@ -475,18 +479,17 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
 
     console.log(`📋 Fetching consignments for operator: ${operator}`);
 
-    // Query IOTA blockchain for consignments
-    const allConsignments = await iotaService.getConsignmentsByOperator(operator);
+    // Get consignments from persistent store
+    let filteredConsignments = consignmentStore.getConsignmentsByOperator(operator);
 
     // Filter by status if provided
-    let filteredConsignments = allConsignments;
     if (status && typeof status === 'string') {
       const validStatuses = ['Draft', 'In Transit', 'Received'];
       if (!validStatuses.includes(status)) {
         throw new AppError(`Invalid status. Must be one of: ${validStatuses.join(', ')}`, 400);
       }
 
-      filteredConsignments = allConsignments.filter(
+      filteredConsignments = filteredConsignments.filter(
         (c: Consignment) => c.status === status
       );
       console.log(`🔍 Filtered to ${filteredConsignments.length} consignments with status: ${status}`);
@@ -528,8 +531,8 @@ router.get('/:arc', async (req: Request, res: Response, next: NextFunction) => {
 
     console.log(`🔍 Fetching consignment with ARC: ${arc}`);
 
-    // Get consignment from in-memory store (demo mode)
-    const consignment = consignmentStore.get(arc);
+    // Get consignment from persistent store
+    const consignment = consignmentStore.getConsignment(arc);
 
     if (!consignment) {
       throw new AppError('Consignment not found', 404);
@@ -763,8 +766,8 @@ router.get('/:arc/verify', async (req: Request, res: Response, next: NextFunctio
 
     console.log(`🔍 Verifying consignment on blockchain: ${arc}`);
 
-    // Get consignment from in-memory store (database in production)
-    const databaseConsignment = consignmentStore.get(arc);
+    // Get consignment from persistent store
+    const databaseConsignment = consignmentStore.getConsignment(arc);
 
     if (!databaseConsignment) {
       throw new AppError('Consignment not found in database', 404);

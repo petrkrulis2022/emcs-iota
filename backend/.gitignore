@@ -7,6 +7,9 @@ dist/
 # Environment variables
 .env
 
+# Persistent data storage
+data/
+
 # Logs
 logs/
 *.log

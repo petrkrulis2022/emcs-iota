@@ -77,7 +77,17 @@ export default function ConsignmentForm({
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Auto-add 0x prefix to consignee address if missing
+    let processedValue = value;
+    if (name === 'consignee' && value && !value.startsWith('0x') && value.length > 0) {
+      // Only add if it looks like a hex address (starts with valid hex chars)
+      if (/^[a-fA-F0-9]/.test(value)) {
+        processedValue = '0x' + value;
+      }
+    }
+    
+    setFormData(prev => ({ ...prev, [name]: processedValue }));
 
     // If goods type changes to Beer, set unit to Liters
     if (name === 'goodsType' && value === 'Beer') {
@@ -286,13 +296,39 @@ export default function ConsignmentForm({
       Object.keys(errors).length === 0
     );
 
+    // Debug logging
+    console.log('Form Validation Debug:', {
+      isConnected,
+      consignee: formData.consignee,
+      goodsType: formData.goodsType,
+      quantity: formData.quantity,
+      unit: formData.unit,
+      origin: formData.origin,
+      destination: formData.destination,
+      isValidAddress: isValidIOTAAddress(formData.consignee),
+      errorsCount: Object.keys(errors).length,
+      errors: errors,
+      baseValid,
+      beerName: formData.beerName,
+      alcoholPercentage: formData.alcoholPercentage,
+    });
+
     // Additional validation for beer consignments
     if (formData.goodsType === 'Beer') {
-      return baseValid && 
+      const beerValid = baseValid && 
         formData.beerName && 
         formData.alcoholPercentage && 
         parseFloat(formData.alcoholPercentage) > 0 &&
         parseFloat(formData.alcoholPercentage) <= 100;
+      
+      console.log('Beer Validation:', {
+        beerValid,
+        hasBeerName: !!formData.beerName,
+        hasAlcohol: !!formData.alcoholPercentage,
+        alcoholValue: parseFloat(formData.alcoholPercentage),
+      });
+      
+      return beerValid;
     }
 
     return baseValid;
